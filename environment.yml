@@ -1,4 +1,4 @@
-name: SADTeam
+name: SADTech
 channels:
   - conda-forge
   - defaults
