@@ -1,33 +1,57 @@
+"""
+Data Preparation
+Tokenizes the data and divides it, as well as the labels, into test/validation
+splits. Vectorizes the data and outputs the vectors as sparse matrices into
+.npz files.
+"""
+
 import os
 import re
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
+from scipy.sparse import spmatrix
 
 from tam_stop_words import STOP_WORDS as TAM_STOP_WORDS
 from mal_stop_words import STOP_WORDS as MAL_STOP_WORDS
 
 
-def clean_up_line(line: str, stop_words: set) -> list:
+def clean_up_line(line: str, stop_words: set) -> str:
     """
-    things removed:
+    Given a string and a set of stop words, removes extraneous punctuation,
+    numberes, and the stop words from the string.
+
+    Things removed:
         punctuation: . , ; \\ \\" \\' ?
         numbers: 0-9
+
+    Returns the cleaned up string.
     """
-    line = re.sub(r"\.\s|,|;|\\\\|\\\"|\\'|\?|\d", "", line)
+    line = line + " "
+    line = re.sub(r"\s\S*?\d\S*?\s", " ", line)
+    line = re.sub(r",|;|\\\\|\\\"|\\'|\?|\d", "", line)
+    line = re.sub(r"\.\s", " ", line)
     line = " ".join([word for word in line.split()
                         if word not in stop_words])
     return line.strip()
 
 
-def get_file_words(directory: str, stop_words: set) -> dict[str, list]:
+def get_file_words(directory: str, stop_words: set) -> dict[str, str]:
+    """
+    Given a directory path and a set of stop words, cleans up each text
+    document in the directory.
+
+    Returns a dictionary mapping each document's name to a string of the words
+    in said document..
+    """
     file_words = {}
     for file in os.listdir(directory):
         file_path = directory + file
         file_name = file.split(".")[0]
         file_words[file_name] = ""
         with open(file_path) as f:
+            print(file_path)
             lines = f.readlines()
             for line in lines:
                 line = clean_up_line(line, stop_words)
@@ -36,9 +60,12 @@ def get_file_words(directory: str, stop_words: set) -> dict[str, list]:
     return file_words
 
 
-def vectorize(X_train, X_val):
+def vectorize(X_train: spmatrix, X_val: spmatrix) -> tuple[spmatrix, spmatrix]:
     """
-    from https://skimai.com/fine-tuning-bert-for-sentiment-analysis/
+    Given train and validation splits, creates tfidf vectors of each split (from
+    https://skimai.com/fine-tuning-bert-for-sentiment-analysis/).
+
+    Returns the vectors as sparse matrices.
     """
     # Preprocess text
     X_train_preprocessed = np.array([text for text in X_train])
@@ -54,7 +81,15 @@ def vectorize(X_train, X_val):
     return X_train_tfidf, X_val_tfidf
 
 
-def get_vectors(lang, stop_words):
+def get_vectors(lang: str, stop_words: set) -> tuple[spmatrix, spmatrix]:
+    """
+    Given a language string and a set of stop words, gets the values and labels
+    from the data, creates train/validation splits for them, and vectorizes the
+    values.
+
+    Returns sparse matrices containing the vectorized data for the test and
+    validation splits.
+    """
     values = get_file_words("data/" + lang + "/text/", stop_words)
     values = sorted(values.items())
     values = [x[1] for x in values]
