@@ -1,0 +1,22 @@
+name: SADTech
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.*
+  - black=23.*
+  - mypy=1.*
+  - plotnine=0.10.*
+  - nltk=3.8.*
+  - stanfordcorenlp=3.*
+  - stanza=1.5.*
+  - spacy=3.5.*
+  - scipy=1.10.*
+  - numpy=1.24.*
+  - pandas=2.*
+  - scikit-learn=1.2.*
+  - pytorch=1.13.*
+  - transformers=4.*
+  - fairseq=0.12.*
+  - ftfy=6.*
+  - flax=0.6.*
