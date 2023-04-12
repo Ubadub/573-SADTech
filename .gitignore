@@ -139,3 +139,6 @@ data/
 
 # src/
 src/__pycache__/
+
+# vscode
+.vscode/
