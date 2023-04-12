@@ -23,14 +23,16 @@ def clean_up_line(line: str, stop_words: set) -> str:
     numberes, and the stop words from the string.
 
     Things removed:
-        punctuation: . , ; \\ \\" \\' ?
+        punctuation: . , ; \\" \\' ? : !
         numbers: 0-9
 
     Returns the cleaned up string.
     """
     line = line + " "
     line = re.sub(r"\s\S*?\d\S*?\s", " ", line)
-    line = re.sub(r",|;|\\\\|\\\"|\\'|\?|\d", "", line)
+    # line = re.sub(r"[a-zA-Z]", " ", line)
+    line = re.sub(r",|;|\"|\'|\?|\d|:|!", "", line)
+    line = re.sub(r"\\", "", line)
     line = re.sub(r"\.\s", " ", line)
     line = " ".join([word for word in line.split()
                         if word not in stop_words])
@@ -43,7 +45,7 @@ def get_file_words(directory: str, stop_words: set) -> dict[str, str]:
     document in the directory.
 
     Returns a dictionary mapping each document's name to a string of the words
-    in said document..
+    in said document.
     """
     file_words = {}
     for file in os.listdir(directory):
@@ -51,7 +53,6 @@ def get_file_words(directory: str, stop_words: set) -> dict[str, str]:
         file_name = file.split(".")[0]
         file_words[file_name] = ""
         with open(file_path) as f:
-            print(file_path)
             lines = f.readlines()
             for line in lines:
                 line = clean_up_line(line, stop_words)

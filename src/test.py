@@ -50,7 +50,7 @@ def test_data_prep():
     print("        Test 7")
     # testing removal of quotes
     test = "நான் உன் போன் ஏன் போனா மிஸ்டேக் பண்ணி எடுத்துட்டு போயிட்டேன்\" . \" சோ,"
-    exp = "போன் போனா மிஸ்டேக் பண்ணி எடுத்துட்டு போயிட்டேன்  சோ"
+    exp = "போன் போனா மிஸ்டேக் பண்ணி எடுத்துட்டு போயிட்டேன் சோ"
     assert_equals(exp, clean_up_line(test, TAM_STOP_WORDS))
 
     print("    Success")
