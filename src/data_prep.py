@@ -82,7 +82,23 @@ def vectorize(X_train: spmatrix, X_val: spmatrix) -> tuple[spmatrix, spmatrix]:
     return X_train_tfidf, X_val_tfidf
 
 
-def get_vectors(lang: str, stop_words: set) -> tuple[spmatrix, spmatrix]:
+def get_merged_df(lang: str, stop_words: set):
+    """
+    """
+    values = get_file_words("data/" + lang + "/text/", stop_words)
+    values_temp = {"File name": list(values.keys()), "Text": list(values.values())}
+    values_df = pd.DataFrame.from_dict(values_temp)
+
+    labels_df = pd.read_csv("data/" + lang + "/" + lang + "_train_label.tsv", sep="\t", header=0)
+
+    merged = labels_df.merge(values_df, left_on="File name", right_on="File name")
+    merged["Lang"] = lang
+    merged = merged[["File name", "Lang", "Label", "Text"]]
+
+    return merged
+
+
+def get_vectors(lang: str, merged: pd.DataFrame) -> None:
     """
     Given a language string and a set of stop words, gets the values and labels
     from the data, creates train/validation splits for them, and vectorizes the
@@ -91,34 +107,28 @@ def get_vectors(lang: str, stop_words: set) -> tuple[spmatrix, spmatrix]:
     Returns sparse matrices containing the vectorized data for the test and
     validation splits.
     """
-    values = get_file_words("data/" + lang + "/text/", stop_words)
-    values = sorted(values.items())
-    values = [x[1] for x in values]
-
-    labels = pd.read_csv("data/" + lang + "/" + lang + "_train_label.tsv", sep="\t", header=0)
-    labels = list(labels["Label"])
-
-    values = values[0:len(labels)]
-
     X_train, X_val, y_train, y_val =\
-    train_test_split(values, labels, test_size=0.2, random_state=2020)
+    train_test_split(merged["Text"], merged["Label"], test_size=0.2, random_state=2020)
 
-    return vectorize(X_train, X_val)
+    X_train_tfidf, X_val_tfidf = vectorize(X_train, X_val)
+
+    np.savez("outputs/vectors/" + lang + "_X_train_tfidf.npz", data=X_train_tfidf.data, indices=X_train_tfidf.indices,
+             indptr=X_train_tfidf.indptr, shape=X_train_tfidf.shape)
+    np.savez("outputs/vectors/" + lang + "_X_val_tfidf.npz", data=X_val_tfidf.data, indices=X_val_tfidf.indices,
+             indptr=X_val_tfidf.indptr, shape=X_val_tfidf.shape)
 
 
 def main():
-    tam_X_train_tfidf, tam_X_val_tfidf = get_vectors("tam", TAM_STOP_WORDS)
-    np.savez("outputs/vectors/tam_X_train_tfidf.npz", data=tam_X_train_tfidf.data, indices=tam_X_train_tfidf.indices,
-             indptr=tam_X_train_tfidf.indptr, shape=tam_X_train_tfidf.shape)
-    np.savez("outputs/vectors/tam_X_val_tfidf.npz", data=tam_X_val_tfidf.data, indices=tam_X_val_tfidf.indices,
-             indptr=tam_X_val_tfidf.indptr, shape=tam_X_val_tfidf.shape)
+    tam_merged = get_merged_df("tam", TAM_STOP_WORDS)
+    # tam_merged.to_csv("outputs/tam_data_with_labels.csv", header=False, index=False)
+    get_vectors("tam", tam_merged)
 
+    mal_merged = get_merged_df("mal", MAL_STOP_WORDS)
+    # mal_merged.to_csv("outputs/mal_data_with_labels.csv", header=False, index=False)
+    get_vectors("mal", mal_merged)
 
-    mal_X_train_tfidf, mal_X_val_tfidf = get_vectors("mal", MAL_STOP_WORDS)
-    np.savez("outputs/vectors/mal_X_train_tfidf.npz", data=mal_X_train_tfidf.data, indices=mal_X_train_tfidf.indices,
-             indptr=mal_X_train_tfidf.indptr, shape=mal_X_train_tfidf.shape)
-    np.savez("outputs/vectors/mal_X_val_tfidf.npz", data=mal_X_val_tfidf.data, indices=mal_X_val_tfidf.indices,
-             indptr=mal_X_val_tfidf.indptr, shape=mal_X_val_tfidf.shape)
+    master_merged = tam_merged.append(mal_merged)
+    master_merged.to_csv("outputs/master_data_with_labels.csv", header=False, index=False)
 
 
 if __name__ == '__main__':
