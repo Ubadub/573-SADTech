@@ -2,7 +2,8 @@
 Data Preparation
 Tokenizes the data and divides it, as well as the labels, into test/validation
 splits. Vectorizes the data and outputs the vectors as sparse matrices into
-.npz files.
+.npz files. Also creates and outputs a master .csv file that houses all the data
+to the data/directory
 """
 
 import os
@@ -82,8 +83,13 @@ def vectorize(X_train: spmatrix, X_val: spmatrix) -> tuple[spmatrix, spmatrix]:
     return X_train_tfidf, X_val_tfidf
 
 
-def get_merged_df(lang: str, stop_words: set):
+def get_merged_df(lang: str, stop_words: set) -> pd.DataFrame:
     """
+    Given a language string and a set of stop words of the given language, creates a
+    Pandas DataFrame object housing ["File name", "Lang", "Label", "Text"] columns for all
+    the data of the given language
+
+    Returns the cleaned data as a Pandas DataFrame object
     """
     values = get_file_words("data/" + lang + "/text/", stop_words)
     values_temp = {"File name": list(values.keys()), "Text": list(values.values())}
@@ -100,12 +106,11 @@ def get_merged_df(lang: str, stop_words: set):
 
 def get_vectors(lang: str, merged: pd.DataFrame) -> None:
     """
-    Given a language string and a set of stop words, gets the values and labels
-    from the data, creates train/validation splits for them, and vectorizes the
-    values.
+    Given a language string and Pandas DataFrame representing all the data of the given langauge,
+    creates train/validation splits for them, and vectorizes the values.
 
-    Returns sparse matrices containing the vectorized data for the test and
-    validation splits.
+    Saves sparse matrices as ".npz" files containing the vectorized data for the test and
+    validation splits to the outputs/vectors/ directory
     """
     X_train, X_val, y_train, y_val =\
     train_test_split(merged["Text"], merged["Label"], test_size=0.2, random_state=2020)
@@ -128,7 +133,7 @@ def main():
     get_vectors("mal", mal_merged)
 
     master_merged = tam_merged.append(mal_merged)
-    master_merged.to_csv("outputs/master_data_with_labels.csv", header=False, index=False)
+    master_merged.to_csv("data/master_data_with_labels.csv", header=False, index=False)
 
 
 if __name__ == '__main__':
