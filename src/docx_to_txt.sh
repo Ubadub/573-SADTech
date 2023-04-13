@@ -2,7 +2,7 @@
 
 for file in *; 
 do 
-    pandoc -f docx -s "$file" -o "$file.txt"
+    pandoc -f docx -s "$file" -o "$file.txt" --wrap=none
 done
 
 for file in *; 
