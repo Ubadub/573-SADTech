@@ -96,11 +96,13 @@ def get_merged_df(lang: str, stop_words: set) -> pd.DataFrame:
     values_temp = {"File name": list(values.keys()), "Text": list(values.values())}
     values_df = pd.DataFrame.from_dict(values_temp)
 
-    labels_df = pd.read_csv("data/" + lang + "/" + lang + "_train_label.tsv", sep="\t", header=0)
+    labels_df = pd.read_csv("data/" + lang + "/labels.tsv", sep="\t", header=0)
+
+    assert len(values_df) == len(labels_df)
 
     merged = labels_df.merge(values_df, left_on="File name", right_on="File name")
     merged["Lang"] = lang
-    merged = merged[["File name", "Lang", "Label", "Text"]]
+    merged = merged[["File name", "Lang", "Labels", "Text"]]
 
     return merged
 
@@ -114,7 +116,7 @@ def get_vectors(lang: str, merged: pd.DataFrame) -> None:
     validation splits to the outputs/vectors/ directory
     """
     X_train, X_val, y_train, y_val =\
-    train_test_split(merged["Text"], merged["Label"], test_size=0.2, random_state=2020)
+    train_test_split(merged["Text"], merged["Labels"], test_size=0.2, random_state=2020)
 
     X_train_tfidf, X_val_tfidf = vectorize(X_train, X_val)
 
