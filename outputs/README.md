@@ -2,10 +2,10 @@
 
 ## vectors/
 - files
-  - `tam_X_train_tfidf.npz` - Tamil train vectors
-  - `tam_X_val_tfidf.npz` - Tamil validation vectors
-  - `mal_X_train_tfidf.npz` - Malayalam train vectors
-  - `mal_X_val_tfidf.npz` - Malayalam validation vectors
+  - `text/tam_X_train_tfidf.npz` - Tamil train vectors of text data
+  - `text/tam_X_val_tfidf.npz` - Tamil validation vectors of text data
+  - `text/mal_X_train_tfidf.npz` - Malayalam train vectors of text data
+  - `text/mal_X_val_tfidf.npz` - Malayalam validation vectors of text data
 - file format
   ```python
     from scipy import sparse
