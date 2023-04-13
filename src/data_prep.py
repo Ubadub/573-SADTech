@@ -24,7 +24,7 @@ def clean_up_line(line: str, stop_words: set) -> str:
     numberes, and the stop words from the string.
 
     Things removed:
-        punctuation: . , ; \\" \\' ? : !
+        punctuation: . , ; " ' ? : !
         numbers: 0-9
 
     Returns the cleaned up string.
