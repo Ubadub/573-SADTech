@@ -137,8 +137,5 @@ dmypy.json
 # data/
 data/
 
-# src/
-src/__pycache__/
-
 # vscode
 .vscode/
