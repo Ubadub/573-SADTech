@@ -71,8 +71,8 @@ def vectorize(X_train: spmatrix, X_val: spmatrix) -> tuple[spmatrix, spmatrix]:
     Returns the vectors as sparse matrices.
     """
     # Preprocess text
-    X_train_preprocessed = np.array([text for text in X_train])
-    X_val_preprocessed = np.array([text for text in X_val])
+    X_train_preprocessed = np.array(X_train)
+    X_val_preprocessed = np.array(X_val)
 
     # Calculate TF-IDF
     tf_idf = TfidfVectorizer(ngram_range=(1, 3),
@@ -127,12 +127,12 @@ def get_vectors(lang: str, merged: pd.DataFrame) -> None:
 def main():
     TAM_STOP_WORDS = Tamil().Defaults.stop_words
     tam_merged = get_merged_df("tam", TAM_STOP_WORDS)
-    # tam_merged.to_csv("data/tam_data_with_labels.csv", header=False, index=False)
+    # tam_merged.to_csv("data/tam/tam_data_with_labels.csv", header=False, index=False)
     get_vectors("tam", tam_merged)
 
     MAL_STOP_WORDS = Malayalam().Defaults.stop_words
     mal_merged = get_merged_df("mal", MAL_STOP_WORDS)
-    # mal_merged.to_csv("data/mal_data_with_labels.csv", header=False, index=False)
+    # mal_merged.to_csv("data/mal/mal_data_with_labels.csv", header=False, index=False)
     get_vectors("mal", mal_merged)
 
     master_merged = pd.concat([tam_merged, mal_merged])
