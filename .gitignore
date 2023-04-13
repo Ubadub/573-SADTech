@@ -134,8 +134,5 @@ dmypy.json
 # Vim swap files
 *.sw*
 
-# data/
-data/
-
 # vscode
 .vscode/
