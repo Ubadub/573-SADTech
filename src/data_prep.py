@@ -10,12 +10,13 @@ import os
 import re
 import pandas as pd
 import numpy as np
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from scipy.sparse import spmatrix
 
-from tam_stop_words import STOP_WORDS as TAM_STOP_WORDS
-from mal_stop_words import STOP_WORDS as MAL_STOP_WORDS
+from spacy.lang.ta import Tamil
+from spacy.lang.ml import Malayalam
 
 
 def clean_up_line(line: str, stop_words: set) -> str:
@@ -124,15 +125,17 @@ def get_vectors(lang: str, merged: pd.DataFrame) -> None:
 
 
 def main():
+    TAM_STOP_WORDS = Tamil().Defaults.stop_words
     tam_merged = get_merged_df("tam", TAM_STOP_WORDS)
-    # tam_merged.to_csv("outputs/tam_data_with_labels.csv", header=False, index=False)
+    # tam_merged.to_csv("data/tam_data_with_labels.csv", header=False, index=False)
     get_vectors("tam", tam_merged)
 
+    MAL_STOP_WORDS = Malayalam().Defaults.stop_words
     mal_merged = get_merged_df("mal", MAL_STOP_WORDS)
-    # mal_merged.to_csv("outputs/mal_data_with_labels.csv", header=False, index=False)
+    # mal_merged.to_csv("data/mal_data_with_labels.csv", header=False, index=False)
     get_vectors("mal", mal_merged)
 
-    master_merged = tam_merged.append(mal_merged)
+    master_merged = pd.concat([tam_merged, mal_merged])
     master_merged.to_csv("data/master_data_with_labels.csv", header=False, index=False)
 
 

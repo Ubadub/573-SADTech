@@ -1,13 +1,20 @@
+"""
+Testing
+Unit tests for python scripts.
+"""
+
 from utils import assert_equals
 
 from data_prep import clean_up_line
-from tam_stop_words import STOP_WORDS as TAM_STOP_WORDS
+from spacy.lang.ta import Tamil
 
 def test_data_prep():
     print("------------------------------------------------------------")
     print("Testing functions in data_prep.py")
 
     print("    Testing clean_up_line")
+
+    TAM_STOP_WORDS = Tamil().Defaults.stop_words
 
     print("        Test 1")
     # testing removal of punctuation at end of word
