@@ -3,7 +3,6 @@ Unit tests for dataset_obj.py.
 """
 
 import unittest
-import pandas as pd
 
 from src.dataset_obj import get_data, create_dataset_obj
 
@@ -152,10 +151,6 @@ class TestCreateDataSetObject(unittest.TestCase):
         actual = data[index]["text"]
         exp = "இவங்க வந்து, இந்த டயலாக் காமெடி மட்டுமே நம்பி, இந்தப் படம் வந்து எடுக்கப்பட்டு இருக்கு . இதுல"
         self.assertTrue(exp in actual)
-
-
-
-
 
 
 if __name__ == '__main__':
