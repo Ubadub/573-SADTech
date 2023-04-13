@@ -134,9 +134,6 @@ dmypy.json
 # Vim swap files
 *.sw*
 
-# data/
-data/
-
 # src/
 src/__pycache__/
 
