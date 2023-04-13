@@ -120,9 +120,9 @@ def get_vectors(lang: str, merged: pd.DataFrame) -> None:
 
     X_train_tfidf, X_val_tfidf = vectorize(X_train, X_val)
 
-    np.savez("outputs/vectors/" + lang + "_X_train_tfidf.npz", data=X_train_tfidf.data, indices=X_train_tfidf.indices,
+    np.savez("outputs/vectors/text/" + lang + "_X_train_tfidf.npz", data=X_train_tfidf.data, indices=X_train_tfidf.indices,
              indptr=X_train_tfidf.indptr, shape=X_train_tfidf.shape)
-    np.savez("outputs/vectors/" + lang + "_X_val_tfidf.npz", data=X_val_tfidf.data, indices=X_val_tfidf.indices,
+    np.savez("outputs/vectors/text/" + lang + "_X_val_tfidf.npz", data=X_val_tfidf.data, indices=X_val_tfidf.indices,
              indptr=X_val_tfidf.indptr, shape=X_val_tfidf.shape)
 
 
@@ -138,7 +138,7 @@ def main():
     get_vectors("mal", mal_merged)
 
     master_merged = pd.concat([tam_merged, mal_merged])
-    master_merged.to_csv("data/master_data_with_labels.csv", header=False, index=False)
+    master_merged.to_csv("data/master_text_with_labels.csv", header=False, index=False)
 
 
 if __name__ == '__main__':
