@@ -1,5 +1,6 @@
 name: SADTech
 channels:
+  - fastai
   - conda-forge
   - defaults
 dependencies:
@@ -17,6 +18,7 @@ dependencies:
   - scikit-learn=1.*
   - pytorch=2.*
   - transformers=4.*
+  - sentencepiece=0.*
   - fairseq=0.*
   - ftfy=6.*
   - flax=0.*
