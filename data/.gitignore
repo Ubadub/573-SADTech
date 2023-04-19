@@ -1,4 +1,4 @@
 */audio/*
 */text/*
 */video/*
-*.csv
+*/*dataset_dict/

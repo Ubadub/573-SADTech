@@ -23,6 +23,8 @@ from transformers import (
     TrainingArguments,
 )
 
+from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
+
 # logger = logging.getLogger(__name__)
 #
 # # Setup logging
@@ -38,71 +40,16 @@ from transformers import (
 # datasets.utils.logging.set_verbosity(log_level)
 # transformers.utils.logging.set_verbosity(log_level)
 
-GLOBAL_SEED = 573
-
-N_FOLDS = 2 #4
-
 PRETRAINED_MODEL = "ai4bharat/indic-bert"
 
-CLASS_NAMES = (
-    "HIGHLY NEGATIVE",
-    "NEGATIVE",
-    "NEUTRAL",
-    "POSITIVE",
-    "HIGHLY POSITIVE",
-)
-
-CLASS_LABELS = datasets.ClassLabel(names=CLASS_NAMES)
 
 # FEATS = datasets.Features(
 #     {"text": datasets.Value(dtype="string"), "label": CLASS_LABELS}
 # )
 
 
-def process_raw_dataset(
-    entry: dict[str, Any],
-    class_labels: datasets.ClassLabel,
-    path: str = ".",
-    ext: str = "txt",
-) -> dict[str, Any]:
-    fname = f'{entry["file"]}.{ext}'
-    fpath = os.path.join(path, fname)
-    with open(fpath, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-        text = "".join(l.strip() for l in lines)
-        entry["text"] = text
-    entry["label"] = class_labels.str2int(entry["label"].strip().upper())
-    del entry["file"]
-    return entry
-
-
-def assemble_dataset(
-    lang: str,
-    class_labels: datasets.ClassLabel,
-    root_data_dir: str = "../data/",
-    subdir: str = "text/",
-    labels_file_name: str = "all.csv",
-    delimiter: str = ",",
-) -> datasets.DatasetDict:
-    ext = os.path.splitext(labels_file_name)[-1][1:]
-    lang_dir = os.path.join(root_data_dir, lang)
-    text_file_dir = os.path.join(lang_dir, subdir)
-    labels_file = os.path.join(lang_dir, labels_file_name)
-    raw_ds = datasets.load_dataset(ext, data_files=labels_file, delimiter=delimiter)
-    #    raw_ds = datasets.load_dataset("csv", data_files="../data/tam/all.csv", delimiter=",")
-    #    raw_ds = datasets.load_dataset(labels_file.split(".")[-1], )
-
-    ds = raw_ds.map(
-        process_raw_dataset,
-        fn_kwargs={"path": text_file_dir, "class_labels": class_labels},
-    ).cast_column("label", class_labels)
-    return ds
-
-
 def compute_metrics(class_names: Sequence[str]) -> Callable[[EvalPrediction], dict]:
-    print("IN HERE")
     def _(eval_pred: EvalPrediction) -> dict:
-        print("WAYYYYY IN HERE")
         y_pred, y_true = eval_pred
         y_pred = np.argmax(y_pred, axis=1)
         metrics = classification_report(
@@ -115,9 +62,6 @@ def compute_metrics(class_names: Sequence[str]) -> Callable[[EvalPrediction], di
         return metrics
 
     return _
-
-
-#    return accuracy.compute(predictions=predictions, references=labels)
 
 
 def finetune_for_sequence_classification(
@@ -142,7 +86,7 @@ def finetune_for_sequence_classification(
     tokenized_ds_dict = ds_dict.map(
         lambda x: tokenizer(
             x["text"],
-#            return_tensors=return_tensors,
+            #            return_tensors=return_tensors,
             truncation=truncation,
             max_length=max_length,
         )
@@ -153,22 +97,25 @@ def finetune_for_sequence_classification(
     tokenized_eval_ds = tokenized_ds_train_all.select(eval_split)
 
     data_collator = DataCollatorWithPadding(
-        tokenizer=tokenizer, padding="max_length", max_length=max_length, return_tensors=return_tensors
+        tokenizer=tokenizer,
+        padding="max_length",
+        max_length=max_length,
+        return_tensors=return_tensors,
     )
 
     id_label_enum = enumerate(class_names)
     id2label = {idx: label for idx, label in id_label_enum}
     label2id = {label: idx for idx, label in id_label_enum}
 
-    num_labels=len(class_names)
+    num_labels = len(class_names)
     print(f"Number of labels: {num_labels}")
     model = AutoModelForSequenceClassification.from_pretrained(
         pretrained_model,
         num_labels=num_labels,
-#        num_labels=len(class_names),
+        #        num_labels=len(class_names),
         id2label=id2label,
         label2id=label2id,
-#        problem_type="multi_label_classification",
+        #        problem_type="multi_label_classification",
         #   problem_type="regression", # TODO (ordinal regression)
     )
 
@@ -218,12 +165,12 @@ def finetune_for_sequence_classification(
         compute_metrics=compute_metrics(class_names),
     )
 
-#    print(f"Trainer: {trainer}")
+    #    print(f"Trainer: {trainer}")
     print("Starting training...")
-#    try:
-#        trainer.train(resume_from_checkpoint=True)
-#    except ValueError:
-#        trainer.train()
+    #    try:
+    #        trainer.train(resume_from_checkpoint=True)
+    #    except ValueError:
+    #        trainer.train()
     trainer.train()
     print("Training done!")
 
@@ -232,7 +179,9 @@ def main():
     lang = sys.argv[1]
     metarun_id = sys.argv[2] if len(sys.argv) >= 3 else "0"
 
-    ds = assemble_dataset(lang, CLASS_LABELS)
+    ds: datasets.DatasetDict = datasets.load_from_disk(
+        f"../data/{lang}/train_dataset_dict"
+    )
     ds_all: datasets.Dataset = ds["train"]
     skfolds = StratifiedKFold(n_splits=N_FOLDS)
     #    skfolds = StratifiedKFold(n_splits=N_FOLDS, random_state=GLOBAL_SEED)
