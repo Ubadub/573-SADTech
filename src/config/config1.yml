@@ -1,0 +1,4 @@
+data_path: ../data/tam/train_dataset_dict
+remove_punc: True
+remove_stop_words: True
+remove_num: True
