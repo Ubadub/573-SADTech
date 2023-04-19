@@ -8,6 +8,8 @@ import yaml
 
 import datasets
 
+import vectors
+
 from spacy.lang.ta import Tamil
 from spacy.lang.ml import Malayalam
 
@@ -45,6 +47,10 @@ def clean_up_line(line: str, config: dict) -> str:
 def do_preprocessing(config: dict, ds_dict: datasets.DatasetDict) -> None:
     pass
 
+def write_output(config):
+    with open(config["output_path"], "w") as wf:
+        pass
+
 
 def main():
     config_file = sys.argv[1]
@@ -55,6 +61,16 @@ def main():
 
     if config["remove_punc"] or config["remove_stop_words"] or config["remove_num"]:
         do_preprocessing(config, ds_dict)
+
+    get_vectors() # based on which model it is; use vectors.py
+
+    if config["model"] == "base":
+        do_baseline()
+        # build up a class
+
+    do_inference()
+
+    write_output()
 
     # model = config["model"]
 
