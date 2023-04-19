@@ -38,7 +38,7 @@ def process_raw_dataset(
 def assemble_dataset(
     lang: str,
     class_labels: datasets.ClassLabel,
-    root_data_dir: str = "../data/",
+    root_data_dir: str = "data/",
     subdir: str = "text/",
     labels_file_name: str = "all.csv",
     delimiter: str = ",",

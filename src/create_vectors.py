@@ -1,5 +1,5 @@
 """
-Classifier
+Vectors
 """
 
 import sys
@@ -14,7 +14,7 @@ from spacy.lang.ml import Malayalam
 TAM_STOP_WORDS = Tamil().Defaults.stop_words
 MAL_STOP_WORDS = Malayalam().Defaults.stop_words
 
-def clean_up_line(line: str, config: dict) -> str:
+def clean_up_text(line: str, config: dict) -> str:
     """
     Given a string and a set of stop words, removes extraneous punctuation,
     numbers, and the stop words from the string.
@@ -42,8 +42,10 @@ def clean_up_line(line: str, config: dict) -> str:
     return line.strip()
 
 
-def do_preprocessing(config: dict, ds_dict: datasets.DatasetDict) -> None:
-    pass
+def do_preprocessing(ds_dict: datasets.DatasetDict, config: dict) -> datasets.DatasetDict:
+    ds_dict["text"] = clean_up_text(ds_dict["text"], config)
+    return ds_dict
+
 
 
 def main():
@@ -54,7 +56,12 @@ def main():
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(config["data_path"])
 
     if config["remove_punc"] or config["remove_stop_words"] or config["remove_num"]:
-        do_preprocessing(config, ds_dict)
+        ds_dict["train"] = ds_dict["train"].map(do_preprocessing,
+                                                fn_kwargs={"config": config}
+                                                )
+
+
+    # we want to turn data into vectors
 
     # model = config["model"]
 
