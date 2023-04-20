@@ -7,9 +7,13 @@ import re
 import yaml
 
 import datasets
+import numpy as np
 
 from spacy.lang.ta import Tamil
 from spacy.lang.ml import Malayalam
+from sklearn.feature_extraction.text import TfidfVectorizer
+from scipy.sparse import spmatrix
+
 
 TAM_STOP_WORDS = Tamil().Defaults.stop_words
 MAL_STOP_WORDS = Malayalam().Defaults.stop_words
@@ -43,8 +47,41 @@ def clean_up_text(line: str, config: dict) -> str:
 
 
 def do_preprocessing(ds_dict: datasets.DatasetDict, config: dict) -> datasets.DatasetDict:
-    ds_dict["text"] = clean_up_text(ds_dict["text"], config)
+    """
+    Param ds_dict: Takes in a huggingface object
+    Param config: Takes in a config dictionary
+
+    Performs preprocessing on all text data. Cleans text data by removing stopwords
+    and/or punctuation based on values from the config dictionary.
+
+    Returns a datasetDict with cleaned text
+    """
+    if config["remove_punc"] or config["remove_stop_words"] or config["remove_num"]:
+        ds_dict["text"] = clean_up_text(ds_dict["text"], config)
     return ds_dict
+
+
+def tfidf_vectors(ds_dict: datasets.DatasetDict):
+    text = np.array(ds_dict["train"]["text"])
+    tf_idf = TfidfVectorizer(ngram_range=(1, 3),
+                             binary=True,
+                             smooth_idf=False
+                             )
+    tfidf_vectors = tf_idf.fit_transform(text)
+
+    return tfidf_vectors
+
+
+def create_vectors(ds_dict: datasets.DatasetDict, config: dict) -> spmatrix:
+    if config["vectors"] == "tfidf":
+        # Calculate TF-IDF Vectors
+        vectors = tfidf_vectors(ds_dict)
+
+    # otherwise not a known vectorization method
+    else:
+        raise ValueError(f"config argument {config['vectors']} not a known vectorization method")
+
+    return vectors
 
 
 
@@ -55,12 +92,13 @@ def main():
 
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(config["data_path"])
 
-    if config["remove_punc"] or config["remove_stop_words"] or config["remove_num"]:
-        ds_dict["train"] = ds_dict["train"].map(do_preprocessing,
-                                                fn_kwargs={"config": config}
-                                                )
+    ds_dict["train"] = ds_dict["train"].map(do_preprocessing,
+                                            fn_kwargs={"config": config}
+                                            )
 
+    vectors = create_vectors(ds_dict, config)
 
+    print(vectors)
     # we want to turn data into vectors
 
     # model = config["model"]

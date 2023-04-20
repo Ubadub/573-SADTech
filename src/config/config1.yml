@@ -3,3 +3,4 @@ lang: tam
 remove_punc: True
 remove_stop_words: True
 remove_num: True
+vectors: tfidf
