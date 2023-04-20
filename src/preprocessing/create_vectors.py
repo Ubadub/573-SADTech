@@ -1,7 +1,8 @@
 """
 Vectors
 
-A wrapper class for feature vectors
+A wrapper class for feature vectors. Takes in data and creates vectors based on the specified
+    vectorization method
 
 We initialize and obtain document Vectors object as follows:
 
@@ -157,7 +158,6 @@ class Vectors:
         """
         text = np.array(self.ds_dict["train"]["text"])
 
-        print(text[0])
         tf_idf = TfidfVectorizer(input="content",
                                  encoding="utf-8",
                                  ngram_range=(1, 3),
@@ -198,6 +198,9 @@ class Vectors:
         if self.vec_type == "tfidf":
             # Calculate TF-IDF Vectors
             vectors = self._tfidf_vectors()
+
+        # TODO: add more vectorization methods here
+        # elif self.vec_type == "...":
         else:  # otherwise not a known vectorization method
             raise ValueError(f"config argument {self.config['vectors']} not a known vectorization method")
 
