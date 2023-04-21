@@ -14,7 +14,9 @@ from sklearn.metrics import (
     r2_score,
 )
 from sklearn.model_selection import StratifiedKFold
+import torch
 from transformers import (
+    AutoConfig,
     AutoModelForSequenceClassification,
     AutoTokenizer,
     DataCollatorWithPadding,
@@ -59,6 +61,12 @@ def compute_metrics(class_names: Sequence[str]) -> Callable[[EvalPrediction], di
             target_names=class_names,
             output_dict=True,
         )
+        print(classification_report(
+            y_true,
+            y_pred,
+            labels=range(len(class_names)),
+            target_names=class_names,
+        ))
         return metrics
 
     return _
@@ -76,8 +84,10 @@ def finetune_for_sequence_classification(
     metarun_id: Union[int, str] = 0,
     run_id: Union[int, str] = 0,
     max_length: Optional[int] = 512,
+    inner_group_num: int = 2,
     truncation: bool = True,
     return_tensors: str = "pt",
+    disable_tqdm: bool = False,
 ):
     ds_train_all = ds_dict["train"]
     class_names: Sequence[str] = ds_train_all.features["label"].names
@@ -109,15 +119,42 @@ def finetune_for_sequence_classification(
 
     num_labels = len(class_names)
     print(f"Number of labels: {num_labels}")
-    model = AutoModelForSequenceClassification.from_pretrained(
+
+    #    model_config = AutoConfig.from_pretrained(pretrained_model, num_hidden_groups=num_hidden_groups, num_labels=num_labels)
+    print(f"Attempting to set inner group number to {inner_group_num}.")
+    model_config = AutoConfig.from_pretrained(
         pretrained_model,
+        inner_group_num=inner_group_num,
         num_labels=num_labels,
-        #        num_labels=len(class_names),
         id2label=id2label,
         label2id=label2id,
-        #        problem_type="multi_label_classification",
+    )
+    print(f"Inner group number is now: {model_config.inner_group_num}.")
+
+    model = AutoModelForSequenceClassification.from_pretrained(
+        pretrained_model,
+        config=model_config,
+        #   num_labels=num_labels,
+        #   num_labels=len(class_names),
+        #   problem_type="multi_label_classification",
         #   problem_type="regression", # TODO (ordinal regression)
     )
+
+#    freeze_modules = [model.base_model.embeddings, model.base_model.encoder.albert_layer_groups[0]
+
+    for param in model.base_model.embeddings.parameters():
+        param.requires_grad = False
+
+    for param in model.base_model.encoder.albert_layer_groups[0].albert_layers[0].parameters():
+        param.requires_grad = False
+
+#    for idx, layer in enumerate(model.base_model.encoder.albert_layer_groups[0].albert_layers):
+#        if idx
+#        for param in model.base_model.encoder.albert_layer_groups[0].parameters():
+#            param.requires_grad = False
+
+#    if num_hidden_groups > 1:
+#        pass
 
     output_dir = f"../outputs/{lang}/{metarun_id}/{run_id}/"
     os.makedirs(output_dir, exist_ok=True)
@@ -126,32 +163,43 @@ def finetune_for_sequence_classification(
         print(f"Train files: {[i+1 for i in train_split]}", file=f)
         print(f"Eval files: {[i+1 for i in train_split]}", file=f)
 
+#    per_device_train_batch_size = min(tokenized_train_ds.num_rows, 16)
+#        per_device_train_batch_size=,
+#        per_device_eval_batch_size=tokenized_eval_ds.num_rows,
+
     training_args = TrainingArguments(
         output_dir=output_dir,
         learning_rate=2e-5,
+#        per_device_train_batch_size=tokenized_train_ds.num_rows,
+#        per_device_eval_batch_size=tokenized_eval_ds.num_rows,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
-        num_train_epochs=1,
+        num_train_epochs=100,
         weight_decay=0.01,
-        eval_steps=1,
-        evaluation_strategy="steps",
+        evaluation_strategy="epoch",
         log_level="debug",
-        logging_steps=1,
-        logging_strategy="steps",
+        logging_strategy="epoch",
         logging_first_step=True,
-        save_steps=1,
-        save_strategy="steps",
+        save_strategy="epoch",
+#        evaluation_strategy="steps",
+#        log_level="debug",
+#        logging_steps=1,
+#        logging_strategy="steps",
+#        logging_first_step=True,
+#        save_steps=1,
+#        save_strategy="steps",
         #        save_strategy="epoch",
         seed=GLOBAL_SEED,
         load_best_model_at_end=True,
         resume_from_checkpoint=True,
+        disable_tqdm=disable_tqdm,
         #        push_to_hub=True,
     )
 
-    print(f"Training arguments: {training_args}")
-
-    print(f"Tokenized train dataset: {tokenized_train_ds}")
-    print(f"Tokenized eval dataset: {tokenized_eval_ds}")
+#    print(f"Training arguments: {training_args}")
+#
+#    print(f"Tokenized train dataset: {tokenized_train_ds}")
+#    print(f"Tokenized eval dataset: {tokenized_eval_ds}")
 
     trainer = Trainer(
         model=model,
@@ -171,11 +219,25 @@ def finetune_for_sequence_classification(
     #        trainer.train(resume_from_checkpoint=True)
     #    except ValueError:
     #        trainer.train()
+
     trainer.train()
+
     print("Training done!")
+
+    trainer.save_model(os.path.join(output_dir, "best_model"))
+    trainer.state.save_to_json(os.path.join(output_dir, "trainer_state.json"))
 
 
 def main():
+    if not torch.cuda.is_available():
+        print("CUDA unavailable. Continuing with CPU.")
+        disable_tqdm = False
+#        sys.exit("CUDA unavailable. Aborting.")
+    else:
+        print("CUDA available. Continuing.")
+        datasets.disable_progress_bar()
+        disable_tqdm = True
+
     lang = sys.argv[1]
     metarun_id = sys.argv[2] if len(sys.argv) >= 3 else "0"
 
@@ -189,6 +251,8 @@ def main():
     for n, (train_idxs, eval_idxs) in enumerate(
         skfolds.split(range(ds_all.num_rows), ds_all["label"])
     ):
+        if n > 0:
+            return
         print(f"#### FOLD {n} ####")
         print(f"Training entries: {train_idxs}")
         print(f"Validation entries: {eval_idxs}")
@@ -200,6 +264,7 @@ def main():
             eval_split=eval_idxs,
             metarun_id=metarun_id,
             run_id=f"split_{n}",
+            disable_tqdm=disable_tqdm,
         )
         print(f"#### END FOLD {n} ####\n\n")
 
