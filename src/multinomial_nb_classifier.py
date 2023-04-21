@@ -25,7 +25,7 @@ class NaiveBayesClassifier(Classifier):
         self.model = MultinomialNB(fit_prior=True)
 
 
-    def train_predict(self, train_indices: np.array = None, dev_indices: np.array = None):
+    def train_predict(self, train_indices: np.array, dev_indices: np.array) -> tuple[np.array, np.array]:
         train_vectors = self.feature_vectors[train_indices]
         dev_vectors = self.feature_vectors[dev_indices]
 
@@ -33,8 +33,6 @@ class NaiveBayesClassifier(Classifier):
         dev_gold_labels = self.gold_labels[dev_indices]
 
         self.model.fit(train_vectors, train_gold_labels)
-        print("i've fitted")
-
         predicted = self.model.predict(np.array(dev_vectors))
 
         return dev_gold_labels, predicted

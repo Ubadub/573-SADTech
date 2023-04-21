@@ -8,8 +8,8 @@ from sklearn.metrics import f1_score
 from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
 from preprocessing.create_vectors import Vectors
 
-class Classifier:
 
+class Classifier:
 
     def __init__(self, config: dict, ds_train: datasets.DatasetDict):
         self.config = config
@@ -19,11 +19,17 @@ class Classifier:
         self.model = None
 
 
-    def train_predict(self):
-        pass
+    def train_predict(self, train_idxs: np.array, eval_idxs: np.array) -> tuple[np.array, np.array]:
+        """
+        Abstract Method, necessary for any classifier
+
+        This class is supposed to implement both the training and inference time of a model, returning
+            gold labels and predicted labels (in that order) in a tuple
+        """
+        raise NotImplementedError("Please implement the train_predict() method to override this one!")
 
 
-    def kfold_validation(self, kfolds: int = N_FOLDS):
+    def kfold_validation(self, kfolds: int = N_FOLDS) -> None:
         skfolds = StratifiedKFold(n_splits=kfolds)  # does not shuffle
         splits = skfolds.split(X=self.feature_vectors, y=self.gold_labels)
 
@@ -33,12 +39,22 @@ class Classifier:
             print(f"Validation entries: {eval_idxs}")
 
             gold_labels, predicted = self.train_predict(train_idxs, eval_idxs)
+            #TODO: output predicted labels to a file(?) to inspect choices our model is making
             self.f1_score(gold_labels, predicted)
 
             print(f"#### END FOLD {n} ####\n\n")
 
 
-    def f1_score(self, gold_labels, predicted):
+    def f1_score(self, gold_labels: np.array, predicted: np.array) -> None:
+        """
+        Param:
+            - gold_labels: np.array of gold labels with same indexing scheme as argument predicted
+            - predicted: np.array of predicted labels, with same indexing scheme as argument gold_labels
+
+        Prints the weighted, macro, and micro f1 scores to the console
+        # TODO: make a metrics class and print out more helpful information/output to chosen file??
+        """
+
         f1_weighted = f1_score(gold_labels, predicted, average="weighted")
         f1_macro = f1_score(gold_labels, predicted, average="macro")
         f1_micro = f1_score(gold_labels, predicted, average="micro")
