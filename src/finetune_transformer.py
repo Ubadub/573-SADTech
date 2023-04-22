@@ -23,6 +23,7 @@ from transformers import (
     EvalPrediction,
     Trainer,
     TrainingArguments,
+
 )
 
 from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
@@ -43,30 +44,53 @@ from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
 # transformers.utils.logging.set_verbosity(log_level)
 
 PRETRAINED_MODEL = "ai4bharat/indic-bert"
+#PRETRAINED_MODEL = "xlm-roberta-base"
 
 
 # FEATS = datasets.Features(
 #     {"text": datasets.Value(dtype="string"), "label": CLASS_LABELS}
 # )
 
+# def compute_regression_metrics(eval_pred: EvalPrediction) -> dict:
+#     y_pred, y_true = eval_pred
+#     return {"y_pred": y_pred, "y_true": y_true}
+# 
+# def _convert_to_classes(ys: np.ndarray, num_classes: int):
+#     y_pred_classes = ys.round().squeeze()
+#     y_classes = []
+#     for y in ys:
+#         if y < 0:
+#             pass#y_classes.append(
 
-def compute_metrics(class_names: Sequence[str]) -> Callable[[EvalPrediction], dict]:
+def compute_metrics(class_names: Sequence[str], regression: bool = False) -> Callable[[EvalPrediction], dict]:
     def _(eval_pred: EvalPrediction) -> dict:
         y_pred, y_true = eval_pred
-        y_pred = np.argmax(y_pred, axis=1)
-        metrics = classification_report(
+        num_classes = len(class_names)
+        metrics = {}
+        if regression:
+            y_pred = np.fmin(num_classes-1, np.fmax(0, y_pred.squeeze().round())) #np.fmax(0, np.fmin(5, y_pred.squeeze().round()))
+            #y_true = np.fmin(5, np.fmax(0, y_true.squeeze().round())) #np.fmax(0, np.fmin(5, y_true.squeeze().round()))
+            metrics["MSE"] = mean_squared_error(y_true, y_pred)
+            metrics["R^2"] = r2_score(y_true, y_pred)
+        else:
+            y_pred = np.argmax(y_pred, axis=1)
+
+        metrics.update(classification_report(
             y_true,
             y_pred,
-            labels=range(len(class_names)),
+            labels=range(num_classes),
             target_names=class_names,
             output_dict=True,
-        )
-        print(classification_report(
-            y_true,
-            y_pred,
-            labels=range(len(class_names)),
-            target_names=class_names,
         ))
+
+        metrics["y_true"] = list(y_true.squeeze())
+        metrics["y_pred"] = list(y_pred.squeeze())
+#        print(classification_report(
+#            y_true,
+#            y_pred,
+#            labels=range(len(class_names)),
+#            target_names=class_names,
+#        ))
         return metrics
 
     return _
@@ -78,7 +102,7 @@ def finetune_for_sequence_classification(
     ds_dict: datasets.DatasetDict,
     train_split: Sequence[int],
     eval_split: Sequence[int],
-    #   class_names: Sequence[str] = CLASS_NAMES,
+    class_names: Sequence[str] = CLASS_NAMES,
     #   train_ds: datasets.Dataset,
     #   eval_ds: datasets.Dataset,
     metarun_id: Union[int, str] = 0,
@@ -90,7 +114,7 @@ def finetune_for_sequence_classification(
     disable_tqdm: bool = False,
 ):
     ds_train_all = ds_dict["train"]
-    class_names: Sequence[str] = ds_train_all.features["label"].names
+    #   class_names: Sequence[str] = ds_train_all.features["label"].names
 
     tokenizer = AutoTokenizer.from_pretrained(pretrained_model)
     tokenized_ds_dict = ds_dict.map(
@@ -113,12 +137,12 @@ def finetune_for_sequence_classification(
         return_tensors=return_tensors,
     )
 
-    id_label_enum = enumerate(class_names)
-    id2label = {idx: label for idx, label in id_label_enum}
-    label2id = {label: idx for idx, label in id_label_enum}
+    #   id_label_enum = enumerate(class_names)
+    #   id2label = {idx: label for idx, label in id_label_enum}
+    #   label2id = {label: idx for idx, label in id_label_enum}
 
-    num_labels = len(class_names)
-    print(f"Number of labels: {num_labels}")
+    num_labels = 1 #len(class_names)
+    #   print(f"Number of labels: {num_labels}")
 
     #    model_config = AutoConfig.from_pretrained(pretrained_model, num_hidden_groups=num_hidden_groups, num_labels=num_labels)
     print(f"Attempting to set inner group number to {inner_group_num}.")
@@ -126,8 +150,10 @@ def finetune_for_sequence_classification(
         pretrained_model,
         inner_group_num=inner_group_num,
         num_labels=num_labels,
-        id2label=id2label,
-        label2id=label2id,
+        problem_type="regression", # TODO (ordinal regression)
+        #   problem_type="multi_label_classification",
+        #   id2label=id2label,
+        #   label2id=label2id,
     )
     print(f"Inner group number is now: {model_config.inner_group_num}.")
 
@@ -136,8 +162,6 @@ def finetune_for_sequence_classification(
         config=model_config,
         #   num_labels=num_labels,
         #   num_labels=len(class_names),
-        #   problem_type="multi_label_classification",
-        #   problem_type="regression", # TODO (ordinal regression)
     )
 
 #    freeze_modules = [model.base_model.embeddings, model.base_model.encoder.albert_layer_groups[0]
@@ -167,14 +191,15 @@ def finetune_for_sequence_classification(
 #        per_device_train_batch_size=,
 #        per_device_eval_batch_size=tokenized_eval_ds.num_rows,
 
+#    optimizer = torch.optim
     training_args = TrainingArguments(
         output_dir=output_dir,
         learning_rate=2e-5,
 #        per_device_train_batch_size=tokenized_train_ds.num_rows,
 #        per_device_eval_batch_size=tokenized_eval_ds.num_rows,
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
-        num_train_epochs=100,
+        per_device_train_batch_size=12,
+        per_device_eval_batch_size=12,
+        num_train_epochs=400,
         weight_decay=0.01,
         evaluation_strategy="epoch",
         log_level="debug",
@@ -210,7 +235,9 @@ def finetune_for_sequence_classification(
         #        eval_dataset=ds_dict[eval_split],
         tokenizer=tokenizer,
         data_collator=data_collator,
-        compute_metrics=compute_metrics(class_names),
+        compute_metrics=compute_metrics(class_names, regression=True),
+        #optimizers=
+        #compute_metrics=compute_regression_metrics, #compute_metrics(class_names),
     )
 
     #    print(f"Trainer: {trainer}")
@@ -251,11 +278,12 @@ def main():
     for n, (train_idxs, eval_idxs) in enumerate(
         skfolds.split(range(ds_all.num_rows), ds_all["label"])
     ):
-        if n > 0:
-            return
+#        if n > 0:
+#            return
         print(f"#### FOLD {n} ####")
         print(f"Training entries: {train_idxs}")
         print(f"Validation entries: {eval_idxs}")
+        ds = ds.cast_column("label", datasets.Value("float64"))
         finetune_for_sequence_classification(
             lang,
             PRETRAINED_MODEL,
