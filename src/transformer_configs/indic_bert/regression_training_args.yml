@@ -1,0 +1,34 @@
+pretrained_model: "ai4bharat/indic-bert"
+lang: tam
+run_id: debug_indic_bert_regression
+n_splits: 4
+#dataset_dict_path: f"../data/{lang}/train_dataset_dict"
+use_gpu: True
+disable_loading_bar: True
+TrainingArguments:
+  #  output_dir: "../outputs/tam/" # base directory path; concatenated with fold_id and run_id
+  learning_rate: 2.0e-5
+  # per_device_train_batch_size: tokenized_train_ds.num_rows
+  # per_device_eval_batch_size: tokenized_eval_ds.num_rows
+  per_device_train_batch_size: 12
+  per_device_eval_batch_size: 12
+  num_train_epochs: 100
+  weight_decay: 0.01
+  evaluation_strategy: epoch
+  log_level: debug
+  logging_strategy: epoch
+  logging_first_step: True
+  save_strategy: epoch
+  # evaluation_strategy: steps
+  # log_level: debug
+  # logging_steps: 1
+  # logging_strategy: steps
+  # logging_first_step: True
+  # save_steps: 1
+  # save_strategy: steps
+  # save_strategy: epoch
+  seed: !!python/name:__main__.GLOBAL_SEED
+  load_best_model_at_end: True
+  resume_from_checkpoint: True
+  # disable_tqdm: True
+  # push_to_hub: False
