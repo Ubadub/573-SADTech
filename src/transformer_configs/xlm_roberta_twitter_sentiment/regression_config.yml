@@ -1,0 +1,69 @@
+pretrained_model: "cardiffnlp/twitter-xlm-roberta-base-sentiment"
+lang: tam #tam_mal_shuffled
+run_id: debug_xlm_regression_seven_staggered_unfreeze
+n_splits: 4
+#dataset_dict_path: f"../data/{lang}/train_dataset_dict"
+use_gpu: True
+disable_loading_bar: True
+TrainingArguments:
+  # output_dir: "../outputs/tam/" # base directory path; concatenated with run_id and fold_id
+  # learning_rate: 2.0e-5
+  # per_device_train_batch_size: tokenized_train_ds.num_rows
+  # per_device_eval_batch_size: tokenized_eval_ds.num_rows
+  per_device_train_batch_size: 70
+  per_device_eval_batch_size: 70
+  # num_train_epochs: 25
+  # weight_decay: 0.00
+  evaluation_strategy: epoch
+  log_level: debug
+  logging_strategy: epoch
+  save_strategy: epoch
+  seed: !!python/name:__main__.GLOBAL_SEED
+  load_best_model_at_end: False
+  resume_from_checkpoint: False
+  disable_tqdm: True
+  # push_to_hub: False
+FinetuningArguments:
+  regression: True
+phases:
+  - TrainingArguments:
+      learning_rate: 2.0e-5
+      num_train_epochs: 35
+      #- weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 12
+  - TrainingArguments:
+      learning_rate: 1.0e-6
+      num_train_epochs: 10
+    FinetuningArguments:
+      num_layers_to_freeze: 11
+  - TrainingArguments:
+      learning_rate: 1.0e-7
+      num_train_epochs: 10
+      weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 11
+  - TrainingArguments:
+      learning_rate: 1.0e-7
+      num_train_epochs: 10
+      weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 10
+  - TrainingArguments:
+      learning_rate: 1.0e-8
+      num_train_epochs: 15
+      weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 9
+  - TrainingArguments:
+      learning_rate: 1.0e-8
+      num_train_epochs: 15
+      weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 8
+  - TrainingArguments:
+      learning_rate: 1.0e-9
+      num_train_epochs: 20
+      weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 7
