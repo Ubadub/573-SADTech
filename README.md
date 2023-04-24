@@ -50,7 +50,7 @@
         mal/
         tam/
   ```
-  Note: You might need to merge the outputs/ folder downloaded from Google Drive with the outputs folder in the git repository.
+  Note: You might need to merge the outputs/ folder downloaded from Google Drive with the outputs/ folder in the git repository.
   
   2. For condor: Run `condor_submit D2.sh` from root directory
   3. For local: Run  `./src/d2_run.sh` from root directory
