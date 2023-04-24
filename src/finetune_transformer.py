@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import sys
 from typing import Any, Callable, Optional, Sequence, Union
@@ -38,39 +39,19 @@ from transformers import (
 
 from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
 
-#PRETRAINED_MODEL = "ai4bharat/indic-bert"
-#PRETRAINED_MODEL = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
-
-# logger = logging.getLogger(__name__)
+# def configure_logger(log_level=LOG_LEVEL):
+#     logger = logging.getLogger(__name__)
+#     logging.basicConfig(
+#         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+#         datefmt="%m/%d/%Y %H:%M:%S",
+#         handlers=[logging.StreamHandler(sys.stderr)],
+#     )
 #
-# # Setup logging
-# logging.basicConfig(
-#     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-#     datefmt="%m/%d/%Y %H:%M:%S",
-#     handlers=[logging.StreamHandler(sys.stdout)],
-# )
-#
-# # set the main code and the modules it uses to the same log-level according to the node
-# log_level = training_args.get_process_log_level()
-# logger.setLevel(log_level)
-# datasets.utils.logging.set_verbosity(log_level)
-# transformers.utils.logging.set_verbosity(log_level)
-
-
-# FEATS = datasets.Features(
-#     {"text": datasets.Value(dtype="string"), "label": CLASS_LABELS}
-# )
-
-# def compute_regression_metrics(eval_pred: EvalPrediction) -> dict:
-#     y_pred, y_true = eval_pred
-#     return {"y_pred": y_pred, "y_true": y_true}
-# 
-# def _convert_to_classes(ys: np.ndarray, num_classes: int):
-#     y_pred_classes = ys.round().squeeze()
-#     y_classes = []
-#     for y in ys:
-#         if y < 0:
-#             pass#y_classes.append(
+#     logger.setLevel(log_level)
+#     datasets.utils.logging.set_verbosity(log_level)
+#     transformers.utils.logging.set_verbosity(log_level)
+#     # set the main code and the modules it uses to the same log-level according to the node
+#     log_level = training_args.get_process_log_level()
 
 def compute_metrics(class_names: Sequence[str], regression: bool = False) -> Callable[[EvalPrediction], dict]:
     def _(eval_pred: EvalPrediction) -> dict:
