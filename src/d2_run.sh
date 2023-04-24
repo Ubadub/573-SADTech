@@ -1,12 +1,12 @@
 #!/bin/sh
 
 echo "Activating Environment"
-source /home2/taraw28/miniconda3/etc/profile.d/conda.sh
+source ~/anaconda3/etc/profile.d/conda.sh
 conda activate /home2/taraw28/miniconda3/envs/SADTech
 
-echo "Creating Database"
-python3 src/run_preprocessing.py tam
-python3 src/run_preprocessing.py mal
+# echo "Creating Database"
+# python3 src/run_preprocessing.py tam
+# python3 src/run_preprocessing.py mal
 
 echo "Resetting Output/Results Files"
 > outputs/D2/mal/nb_output.txt
@@ -17,7 +17,8 @@ echo "Running Baseline: Naive Bayes Classifier"
 python3 src/multinomial_nb_classifier.py src/config/nb_tam.yml
 python3 src/multinomial_nb_classifier.py src/config/nb_mal.yml
 
-# Run Finetine Transformer (FT)
-# python src/finetune_transformer.py...
+echo "Running Finetuned Transformer LM Inference"
+python src/transformer_inference.py tam >> outputs/D2/tam/transformers_output.txt
+python src/transformer_inference.py mal >> outputs/D2/mal/transformers_output.txt
 
 echo "DONE"
