@@ -116,7 +116,7 @@ class Classifier:
         # TODO: make a metrics class and print out more helpful information/output to chosen file??
         """
 
-        scores = classification_report(gold_labels, predicted, output_dict=True)
+        scores = classification_report(gold_labels, predicted, output_dict=True, zero_division=0)
 
         prec = scores["weighted avg"]["precision"]
         acc = scores["accuracy"]

@@ -7,7 +7,7 @@
   1. Tara Wueger (taraw28)
 
 ## D2 Run Instructions
-  1. Download data/ and outputs/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY). The structure of the data/ directory should look like:
+  1. Download data/ and outputs/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY), merging them with the same directories from this repo (it is fine to overwrite any files if asked, but the merging strategy should ensure tthat every file in at least one of the two locations(repo and Drive) appears in your local folder). The structure of the data/ directory should look like:
   ```
     data/
       mal/
@@ -26,6 +26,8 @@
         all.csv
         dev.csv
         train.csv
+        train_dataset_dict/
+          ...
       tam/
         audio/
           TAM_MSA_01.mp3
@@ -42,20 +44,29 @@
         all.csv
         dev.csv
         train.csv
+        train_dataset_dict/
+          ...
   ```
   The outputs/ directory should look like:
   ```
     outputs/
       D2/
         mal/
-          ...
+          transformer_model/
+            ...
+          nb_output.txt
         tam/
-          ...
+          transformer_model/
+            ...
+          nb_output.txt
   ```
-  Note: You might need to merge the outputs/ folder downloaded from Google Drive with the outputs/ folder in the git repository.
+  Note: You might need to merge the `outputs/` folder downloaded from Google Drive with the `outputs/` folder in the git repository.
   
-  2. For condor: Run `condor_submit D2.sh` from root directory
-  3. For local: Run  `./src/d2_run.sh` from root directory
+  2. For condor: Run `condor_submit D2.sh` from root directory of our repo (ensuring you have Anaconda installed at `~/anaconda3/`, or modifying `./src/d2_run.sh` accordingly)
+  3. For local:
+    - Install tthe conda environment following the instructions below, under "Development & Contribution Guidelines" >> "Local Development Setup".
+    - Edit the Anaconda paths on lines 4, 5, as appropriate.
+    - Then, run `./src/d2_run.sh` from the root directory of our repo.
 
 ## Shared Task
 TODO
