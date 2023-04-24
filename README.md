@@ -6,6 +6,46 @@
   1. Sam Briggs (briggs3)
   1. Tara Wueger (taraw28)
 
+## D2 Run Instructions
+  1. Download data/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY). The structure of the data/ directory should look like:
+  ```
+    data/
+      mal/
+        audio/
+          MAL_MSA_01.txt
+          ...
+          MAL_MSA_70.txt
+        text/
+          MAL_MSA_01.txt
+          ...
+          MAL_MSA_70.txt
+        video/
+          MAL_MSA_01.txt
+          ...
+          MAL_MSA_70.txt
+        all.csv
+        dev.csv
+        train.csv
+      tam/
+        audio/
+          TAM_MSA_01.txt
+          ...
+          TAM_MSA_64.txt
+        text/
+          TAM_MSA_01.txt
+          ...
+          TAM_MSA_64.txt
+        video/
+          TAM_MSA_01.txt
+          ...
+          TAM_MSA_64.txt
+        all.csv
+        dev.csv
+        train.csv
+  ```
+  2. For condor: Run `condor_submit D2.sh` from root directory
+  3. For local: Run  `./src/d2_run.sh` from root directory
+
 ## Shared Task
 TODO
 

@@ -1,0 +1,9 @@
+data_path: data/mal/train_dataset_dict
+output_path: outputs/D2/mal
+results_path: results
+lang: mal
+remove_punc: True
+remove_stop_words: True
+remove_num: True
+vectors: tfidf
+classifier: nb

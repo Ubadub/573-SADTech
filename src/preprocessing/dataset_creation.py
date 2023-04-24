@@ -32,7 +32,7 @@ def process_raw_dataset(
         text = "".join(l.strip() for l in lines)
         entry["text"] = text
     entry["label"] = class_labels.str2int(entry["label"].strip().upper())
-#    del entry["file"]
+    # del entry["file"]
     return entry
 
 
@@ -69,7 +69,7 @@ def main():
 
     args = parser.parse_args()
     lang = args.lang
-    output_path = args.output or f"../data/{lang}/train_dataset_dict"
+    output_path = args.output or f"data/{lang}/train_dataset_dict"
     output_dir_path = os.path.dirname(output_path)
 
     if output_dir_path:
