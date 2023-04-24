@@ -16,8 +16,14 @@ from classifier import Classifier
 
 class NaiveBayesClassifier(Classifier):
 
+    def __init__(self, config: dict, ds_train: datasets.DatasetDict) -> None:
+        """
+        Params:
+            - config: a configuration .yml file
+            - ds_train: a huggingface datasets object containing the train data
 
-    def __init__(self, config: dict, ds_train: datasets.DatasetDict):
+        Initializes a Naive Bayes Classifier Model
+        """
         super().__init__(
             config=config,
             ds_train=ds_train
@@ -26,6 +32,18 @@ class NaiveBayesClassifier(Classifier):
 
 
     def train_predict(self, train_indices: np.array, dev_indices: np.array) -> tuple[np.array, np.array]:
+        """
+        Params:
+            - train_indices: A list of indices corresponding to the files used for training
+            - dev_indices: A list of indices corresponding to the files used for evaluating
+
+        This method trains the Naive Bayes Classifier using the given train data, and also predicts the labels
+            of the given Development data
+
+        Returns:
+            - dev_gold_labels
+            - predicted
+        """
         train_vectors = self.feature_vectors[train_indices]
         dev_vectors = self.feature_vectors[dev_indices]
 
