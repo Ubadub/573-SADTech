@@ -1,5 +1,7 @@
 data_path: data/debug_output
+lang: tam
 remove_punc: True
 remove_stop_words: True
 remove_num: True
-model: base
+vectors: tfidf
+classifier: svm
