@@ -78,6 +78,7 @@ def compute_metrics(class_names: Sequence[str], regression: bool = False) -> Cal
         num_classes = len(class_names)
         metrics = {}
         if regression:
+            metrics["y_pred_raw"] = list(y_pred.squeeze())
             y_pred = np.fmin(num_classes-1, np.fmax(0, y_pred.squeeze().round())) #np.fmax(0, np.fmin(5, y_pred.squeeze().round()))
             #y_true = np.fmin(5, np.fmax(0, y_true.squeeze().round())) #np.fmax(0, np.fmin(5, y_true.squeeze().round()))
             metrics["MSE"] = mean_squared_error(y_true, y_pred)
@@ -486,6 +487,7 @@ def main():
             print("CUDA unavailable. Continuing with CPU.")
 
     if disable_loading_bar:
+        print("DISABLING LOADING BAR")
         datasets.disable_progress_bar()
 
     ds: datasets.DatasetDict = datasets.load_from_disk(dataset_dict_path)
@@ -509,16 +511,20 @@ def main():
         print(f"Validation entries: {eval_idxs}")
 
         curr_pretrained_model = base_pretrained_model
-        training_args = base_training_args.copy()
-        finetuning_args = base_finetuning_args.copy()
-        print("finetuning_args:", finetuning_args)
+#        training_args = base_training_args.copy()
+#        finetuning_args = base_finetuning_args.copy()
+#        print("finetuning_args:", finetuning_args)
 #        for num_layers_to_freeze in freeze_protocol:
         for phase_idx, phase in enumerate(phases):
+            training_args = base_training_args.copy()
+            finetuning_args = base_finetuning_args.copy()
             print(f"#### BEGIN TRAINING PHASE {phase_idx} ####\n\n")
             print("Phase training arguments are:", phase["TrainingArguments"])
 
             training_args.update(phase["TrainingArguments"])
             finetuning_args.update(phase.get("FinetuningArguments", {}))
+
+            print(f"Training args for phase {phase_idx}:", training_args)
 
             training_args["output_dir"] = os.path.join(base_training_args["output_dir"], f"{run_id}/fold_{n}/phase{phase_idx}")
             os.makedirs(training_args["output_dir"], exist_ok=True)
