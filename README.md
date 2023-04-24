@@ -48,7 +48,9 @@
     outputs/
       D2/
         mal/
+          ...
         tam/
+          ...
   ```
   Note: You might need to merge the outputs/ folder downloaded from Google Drive with the outputs/ folder in the git repository.
   
