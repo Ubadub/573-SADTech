@@ -23,15 +23,16 @@ def process_raw_dataset(
     class_labels: datasets.ClassLabel,
     path: str = ".",
     ext: str = "txt",
+    file_encoding: str = "utf-8-sig",
 ) -> dict[str, Any]:
     fname = f'{entry["file"]}.{ext}'
     fpath = os.path.join(path, fname)
-    with open(fpath, "r", encoding="utf-8") as f:
+    with open(fpath, "r", encoding=file_encoding) as f:
         lines = f.readlines()
         text = "".join(l.strip() for l in lines)
         entry["text"] = text
     entry["label"] = class_labels.str2int(entry["label"].strip().upper())
-    del entry["file"]
+#    del entry["file"]
     return entry
 
 
