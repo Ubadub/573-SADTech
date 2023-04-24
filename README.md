@@ -7,42 +7,51 @@
   1. Tara Wueger (taraw28)
 
 ## D2 Run Instructions
-  1. Download data/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY). The structure of the data/ directory should look like:
+  1. Download data/ and outputs/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY). The structure of the data/ directory should look like:
   ```
     data/
       mal/
         audio/
-          MAL_MSA_01.txt
+          MAL_MSA_01.mp3
           ...
-          MAL_MSA_70.txt
+          MAL_MSA_70.mp3
         text/
           MAL_MSA_01.txt
           ...
           MAL_MSA_70.txt
         video/
-          MAL_MSA_01.txt
+          MAL_MSA_01.mp4
           ...
-          MAL_MSA_70.txt
+          MAL_MSA_70.mp4
         all.csv
         dev.csv
         train.csv
       tam/
         audio/
-          TAM_MSA_01.txt
+          TAM_MSA_01.mp3
           ...
-          TAM_MSA_64.txt
+          TAM_MSA_64.mp3
         text/
           TAM_MSA_01.txt
           ...
           TAM_MSA_64.txt
         video/
-          TAM_MSA_01.txt
+          TAM_MSA_01.mp4
           ...
-          TAM_MSA_64.txt
+          TAM_MSA_64.mp4
         all.csv
         dev.csv
         train.csv
   ```
+  The outputs/ directory should look like:
+  ```
+    outputs/
+      D2/
+        mal/
+        tam/
+  ```
+  Note: You might need to merge the outputs/ folder downloaded from Google Drive with the outputs folder in the git repository.
+  
   2. For condor: Run `condor_submit D2.sh` from root directory
   3. For local: Run  `./src/d2_run.sh` from root directory
 
