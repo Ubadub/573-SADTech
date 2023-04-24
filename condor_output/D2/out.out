@@ -1,0 +1,9 @@
+Activating Environment
+Creating Database
+Downloading and preparing dataset csv/default to /home2/taraw28/.cache/huggingface/datasets/csv/default-e875cabad143547e/0.0.0/6954658bab30a358235fa864b05cf819af0e179325c740e4bc853bcc7ec513e1...
+Dataset csv downloaded and prepared to /home2/taraw28/.cache/huggingface/datasets/csv/default-e875cabad143547e/0.0.0/6954658bab30a358235fa864b05cf819af0e179325c740e4bc853bcc7ec513e1. Subsequent calls will reuse this data.
+Downloading and preparing dataset csv/default to /home2/taraw28/.cache/huggingface/datasets/csv/default-6901f4144a8162ac/0.0.0/6954658bab30a358235fa864b05cf819af0e179325c740e4bc853bcc7ec513e1...
+Dataset csv downloaded and prepared to /home2/taraw28/.cache/huggingface/datasets/csv/default-6901f4144a8162ac/0.0.0/6954658bab30a358235fa864b05cf819af0e179325c740e4bc853bcc7ec513e1. Subsequent calls will reuse this data.
+Resetting Output/Results Files
+Running Baseline: Naive Bayes Classifier
+DONE

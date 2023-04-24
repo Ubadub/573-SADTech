@@ -1,0 +1,52 @@
+#### Lang: tam ####
+#### Naive Bayes Evaluation Output ####
+#### FOLD 0 ####
+weighted f1 score: 0.5031055900621119
+macro f1 score: 0.1565217391304348
+micro f1 score: 0.6428571428571429
+#### END FOLD 0 ####
+
+#### FOLD 1 ####
+weighted f1 score: 0.4155844155844156
+macro f1 score: 0.14545454545454545
+micro f1 score: 0.5714285714285714
+#### END FOLD 1 ####
+
+#### FOLD 2 ####
+weighted f1 score: 0.4688644688644689
+macro f1 score: 0.1523809523809524
+micro f1 score: 0.6153846153846154
+#### END FOLD 2 ####
+
+#### FOLD 3 ####
+weighted f1 score: 0.4688644688644689
+macro f1 score: 0.1523809523809524
+micro f1 score: 0.6153846153846154
+#### END FOLD 3 ####
+
+#### Lang: mal ####
+#### Naive Bayes Evaluation Output ####
+#### FOLD 0 ####
+weighted f1 score: 0.44999999999999996
+macro f1 score: 0.18749999999999997
+micro f1 score: 0.6
+#### END FOLD 0 ####
+
+#### FOLD 1 ####
+weighted f1 score: 0.44999999999999996
+macro f1 score: 0.14999999999999997
+micro f1 score: 0.6
+#### END FOLD 1 ####
+
+#### FOLD 2 ####
+weighted f1 score: 0.44999999999999996
+macro f1 score: 0.18749999999999997
+micro f1 score: 0.6
+#### END FOLD 2 ####
+
+#### FOLD 3 ####
+weighted f1 score: 0.44999999999999996
+macro f1 score: 0.18749999999999997
+micro f1 score: 0.6
+#### END FOLD 3 ####
+

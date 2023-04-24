@@ -1,19 +1,23 @@
 #!/bin/sh
 
+echo "Activating Environment"
 source /home2/taraw28/miniconda3/etc/profile.d/conda.sh
-conda activate /home2/taraw28/573-SADTech/environment.yml
+conda activate /home2/taraw28/miniconda3/envs/SADTech
 
+echo "Creating Database"
+python3 src/run_preprocessing.py tam
+python3 src/run_preprocessing.py mal
 
-# Create Database
-#   Do we need to call this or are we submitting a file that already contains the database?
-python src/preprocessing/dataset_creation.py
+echo "Resetting Output/Results Files"
+> outputs/D2/mal/nb_output.txt
+> outputs/D2/tam/nb_output.txt
+> results/D2_scores.out
 
-# Run Baseline (Naiive Bayes Classifier)
-python src/multinomial_nb_classifier.py src/config/config1.yml
-
-# Do Baseline Eval
+echo "Running Baseline: Naive Bayes Classifier"
+python3 src/multinomial_nb_classifier.py src/config/nb_tam.yml
+python3 src/multinomial_nb_classifier.py src/config/nb_mal.yml
 
 # Run Finetine Transformer (FT)
 # python src/finetune_transformer.py...
 
-# Do FT Eval
+echo "DONE"
