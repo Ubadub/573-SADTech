@@ -1,9 +1,8 @@
 import datasets
 import numpy as np
 
-from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import f1_score
+from sklearn.metrics import classification_report
 
 from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
 from preprocessing.create_vectors import Vectors
@@ -46,9 +45,13 @@ class Classifier:
             if self.config["classifier"] == "nb":
                 output.write("#### Naive Bayes Evaluation Output ####\n")
             else:
-                raise ValueError("Please include possible model in config.yml file.")
+                raise ValueError("Please include possible classifier in config.yml file.")
 
-        for n, (train_idxs, eval_idxs) in enumerate(tqdm(splits)):
+        prec_avg = []
+        acc_avg = []
+        f1_avg = []
+
+        for n, (train_idxs, eval_idxs) in enumerate(splits):
             # print(f"#### FOLD {n} ####")
             # print(f"Training entries: {train_idxs}")
             # print(f"Validation entries: {eval_idxs}")
@@ -57,9 +60,20 @@ class Classifier:
 
             self.output_predicted_labels(gold_labels, predicted, eval_idxs, n)
 
-            self.output_f1_score(gold_labels, predicted, n)
+            self.output_f1_score(gold_labels, predicted, n, prec_avg, acc_avg, f1_avg)
 
             # print(f"#### END FOLD {n} ####\n\n")
+
+        prec_avg = sum(prec_avg) / len(prec_avg)
+        acc_avg = sum(acc_avg) / len(acc_avg)
+        f1_avg = sum(f1_avg) / len(f1_avg)
+
+        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+            output.write(f"#### Pooled F1 Scores ####\n")
+            output.write("weighted average precision score: " + str(prec_avg) + "\n")
+            output.write("accuracy score: " + str(acc_avg) + "\n")
+            output.write("weighted average f1 score: " + str(f1_avg)+ "\n")
+            output.write(f"#### END ####\n\n")
 
 
     def output_predicted_labels(self, gold_labels: np.array, predicted: np.array,
@@ -84,25 +98,37 @@ class Classifier:
             output.write(f"#### END FOLD {fold_num} ####\n\n")
 
 
-    def output_f1_score(self, gold_labels: np.array, predicted: np.array, fold_num: int) -> None:
+    def output_f1_score(self, gold_labels: np.array, predicted: np.array, fold_num: int,
+                        prec_avg: list[float], acc_avg: list[float],
+                        f1_avg: list[float]) -> None:
         """
         Param:
             - gold_labels: np.array of gold labels with same indexing scheme as argument predicted
-            - predicted: np.array of predicted labels, with same indexing scheme as argument gold_labels
+            - predicted: np.array of predicted labels, with same indexing scheme as argument
+                         gold_labels
+            - prec_avg: list of precision metric scores
+            - acc_avg: list of accuracy metric scores
+            - f1_avg: list of f1 metric scores
 
-        Prints the weighted, macro, and micro f1 scores to the results path specified by the
+        Prints the precision, accuracy, and f1 scores to the results path specified by the
             config.yml file.
 
         # TODO: make a metrics class and print out more helpful information/output to chosen file??
         """
 
-        f1_weighted = f1_score(gold_labels, predicted, average="weighted")
-        f1_macro = f1_score(gold_labels, predicted, average="macro")
-        f1_micro = f1_score(gold_labels, predicted, average="micro")
+        scores = classification_report(gold_labels, predicted, output_dict=True)
+
+        prec = scores["weighted avg"]["precision"]
+        acc = scores["accuracy"]
+        f1 = scores["weighted avg"]["f1-score"]
+
+        prec_avg.append(prec)
+        acc_avg.append(acc)
+        f1_avg.append(f1)
 
         with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
             output.write(f"#### FOLD {fold_num} ####\n")
-            output.write("weighted f1 score: " + str(f1_weighted) + "\n")
-            output.write("macro f1 score: " + str(f1_macro) + "\n")
-            output.write("micro f1 score: " + str(f1_micro)+ "\n")
+            output.write("weighted average precision score: " + str(prec) + "\n")
+            output.write("accuracy score: " + str(acc) + "\n")
+            output.write("weighted average f1 score: " + str(f1)+ "\n")
             output.write(f"#### END FOLD {fold_num} ####\n\n")
