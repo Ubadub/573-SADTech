@@ -1,52 +1,64 @@
 #### Lang: tam ####
 #### Naive Bayes Evaluation Output ####
 #### FOLD 0 ####
-weighted f1 score: 0.5031055900621119
-macro f1 score: 0.1565217391304348
-micro f1 score: 0.6428571428571429
+weighted average precision score: 0.41326530612244905
+accuracy score: 0.6428571428571429
+weighted average f1 score: 0.5031055900621119
 #### END FOLD 0 ####
 
 #### FOLD 1 ####
-weighted f1 score: 0.4155844155844156
-macro f1 score: 0.14545454545454545
-micro f1 score: 0.5714285714285714
+weighted average precision score: 0.32653061224489793
+accuracy score: 0.5714285714285714
+weighted average f1 score: 0.4155844155844156
 #### END FOLD 1 ####
 
 #### FOLD 2 ####
-weighted f1 score: 0.4688644688644689
-macro f1 score: 0.1523809523809524
-micro f1 score: 0.6153846153846154
+weighted average precision score: 0.37869822485207105
+accuracy score: 0.6153846153846154
+weighted average f1 score: 0.4688644688644689
 #### END FOLD 2 ####
 
 #### FOLD 3 ####
-weighted f1 score: 0.4688644688644689
-macro f1 score: 0.1523809523809524
-micro f1 score: 0.6153846153846154
+weighted average precision score: 0.37869822485207105
+accuracy score: 0.6153846153846154
+weighted average f1 score: 0.4688644688644689
 #### END FOLD 3 ####
+
+#### Pooled F1 Scores ####
+weighted average precision score: 0.37429809201787234
+accuracy score: 0.6112637362637363
+weighted average f1 score: 0.46410473584386636
+#### END ####
 
 #### Lang: mal ####
 #### Naive Bayes Evaluation Output ####
 #### FOLD 0 ####
-weighted f1 score: 0.44999999999999996
-macro f1 score: 0.18749999999999997
-micro f1 score: 0.6
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
 #### END FOLD 0 ####
 
 #### FOLD 1 ####
-weighted f1 score: 0.44999999999999996
-macro f1 score: 0.14999999999999997
-micro f1 score: 0.6
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
 #### END FOLD 1 ####
 
 #### FOLD 2 ####
-weighted f1 score: 0.44999999999999996
-macro f1 score: 0.18749999999999997
-micro f1 score: 0.6
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
 #### END FOLD 2 ####
 
 #### FOLD 3 ####
-weighted f1 score: 0.44999999999999996
-macro f1 score: 0.18749999999999997
-micro f1 score: 0.6
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
 #### END FOLD 3 ####
+
+#### Pooled F1 Scores ####
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
+#### END ####
 
