@@ -1,0 +1,97 @@
+pretrained_model: "xlm-roberta-base"
+lang: tam_mal_shuffled
+run_id: xlm_roberta_base_regressiong_config6
+n_splits: 5
+#dataset_dict_path: f"../data/{lang}/train_dataset_dict"
+use_gpu: True
+disable_loading_bar: True
+TrainingArguments:
+  per_device_train_batch_size: 75
+  per_device_eval_batch_size: 75
+  # num_train_epochs: 25
+  # weight_decay: 0.00
+  evaluation_strategy: epoch
+  # evaluation_strategy: steps
+  log_level: debug
+  # logging_first_step: True
+  logging_strategy: epoch
+  # logging_strategy: steps
+  save_strategy: steps
+  # save_strategy: epoch
+  seed: !!python/name:__main__.GLOBAL_SEED
+  load_best_model_at_end: False
+  resume_from_checkpoint: False
+  disable_tqdm: True
+  # push_to_hub: False
+FinetuningArguments:
+  regression: True
+phases:
+  - TrainingArguments:
+      learning_rate: 2.0e-5
+      num_train_epochs: 10
+      #- weight_decay: 0.01
+      save_steps: 5
+    FinetuningArguments:
+      num_layers_to_freeze: 12
+  - TrainingArguments:
+      learning_rate: 1.0e-6
+      num_train_epochs: 10
+      save_steps: 5
+    FinetuningArguments:
+      num_layers_to_freeze: 11
+  - TrainingArguments:
+      learning_rate: 1.0e-7
+      num_train_epochs: 10
+      weight_decay: 0.01
+      save_steps: 5
+    FinetuningArguments:
+      num_layers_to_freeze: 10
+  - TrainingArguments:
+      learning_rate: 4.0e-5
+      num_train_epochs: 25
+      #- weight_decay: 0.01
+      save_steps: 5
+    FinetuningArguments:
+      num_layers_to_freeze: 12
+  - TrainingArguments:
+      learning_rate: 1.0e-6
+      num_train_epochs: 15
+      weight_decay: 0.01
+      save_strategy: "no"
+    FinetuningArguments:
+      num_layers_to_freeze: 9
+  - TrainingArguments:
+      learning_rate: 2.0e-6
+      num_train_epochs: 15
+      weight_decay: 0.01
+      save_strategy: "no"
+    FinetuningArguments:
+      num_layers_to_freeze: 8
+  - TrainingArguments:
+      learning_rate: 4.0e-5
+      num_train_epochs: 25
+      weight_decay: 0.01
+      save_steps: 10
+    FinetuningArguments:
+      num_layers_to_freeze: 12
+  - TrainingArguments:
+      learning_rate: 1.0e-7
+      num_train_epochs: 20
+      #weight_decay: 0.01
+      save_steps: 20
+    FinetuningArguments:
+      num_layers_to_freeze: 7
+  - TrainingArguments:
+      learning_rate: 5.0e-8
+      num_train_epochs: 200
+      #weight_decay: 0.01
+      save_steps: 50
+    FinetuningArguments:
+      num_layers_to_freeze: 2
+  - TrainingArguments:
+      learning_rate: 1.0e-6
+      num_train_epochs: 10
+      #weight_decay: 0.01
+      save_strategy: "no"
+    FinetuningArguments:
+      num_layers_to_freeze: 12
