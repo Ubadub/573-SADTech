@@ -22,3 +22,5 @@ dependencies:
   - fairseq=0.*
   - ftfy=6.*
   - flax=0.*
+  - pyyaml=6.*
+  - types-pyyaml=6.*
