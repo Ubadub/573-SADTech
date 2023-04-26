@@ -1,8 +1,8 @@
 #!/bin/sh
 
 echo "Activating Environment"
-#source ~/anaconda3/etc/profile.d/conda.sh
-#conda activate /home2/taraw28/miniconda3/envs/SADTech
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate /home2/taraw28/miniconda3/envs/SADTech
 
 # echo "Creating Database"
 # python3 src/run_preprocessing.py tam
