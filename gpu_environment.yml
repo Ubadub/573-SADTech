@@ -21,7 +21,10 @@ dependencies:
   - pandas=2.*
   - scikit-learn=1.*
   - transformers=4.*
+  - accelerate
   - sentencepiece=0.*
   - fairseq=0.*
   - ftfy=6.*
   - flax=0.*
+  - pyyaml=6.*
+  - types-pyyaml=6.*
