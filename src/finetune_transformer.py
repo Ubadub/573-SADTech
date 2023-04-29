@@ -1,6 +1,8 @@
 import argparse
+from collections import Counter
 import logging
 import os
+import random
 import sys
 from typing import Any, Callable, Optional, Sequence, Union
 import yaml
@@ -12,7 +14,8 @@ from datasets import (
     ClassLabel,
     Dataset,
     DatasetDict,
-    load_dataset
+    load_dataset,
+    concatenate_datasets,
 )
 import numpy as np
 from sklearn.metrics import (
@@ -57,9 +60,9 @@ def compute_metrics(class_names: Sequence[str], regression: bool = False) -> Cal
     def _(eval_pred: EvalPrediction) -> dict:
         y_pred, y_true = eval_pred
         num_classes = len(class_names)
-        metrics = {}
+        metrics = {"y_pred_raw":y_pred.squeeze().tolist()}
         if regression:
-            metrics["y_pred_raw"] = list(y_pred.squeeze())
+            #metrics["y_pred_raw"] = y_pred.squeeze().tolist()
             y_pred = np.fmin(num_classes-1, np.fmax(0, y_pred.squeeze().round())) #np.fmax(0, np.fmin(5, y_pred.squeeze().round()))
             #y_true = np.fmin(5, np.fmax(0, y_true.squeeze().round())) #np.fmax(0, np.fmin(5, y_true.squeeze().round()))
             metrics["MSE"] = mean_squared_error(y_true, y_pred)
@@ -75,8 +78,8 @@ def compute_metrics(class_names: Sequence[str], regression: bool = False) -> Cal
             output_dict=True,
         ))
 
-        metrics["y_true"] = list(y_true.squeeze())
-        metrics["y_pred"] = list(y_pred.squeeze())
+        metrics["y_true"] = y_true.squeeze().tolist()
+        metrics["y_pred"] = y_pred.squeeze().tolist()
 #        print(classification_report(
 #            y_true,
 #            y_pred,
@@ -321,28 +324,61 @@ def compute_metrics(class_names: Sequence[str], regression: bool = False) -> Cal
 # 
 #     return os.path.abspath(final_model_path)
 
+def rebalance_ds(
+    ds: Dataset,
+    seed: Optional[int],
+    label_field: str = "label",
+    shuffle: bool = False,
+    shuffle_seed: Optional[int] = None
+) -> Dataset:
+    print("Beginning rebalancing.")
+    if seed is not None:
+        random.seed(seed)
+    labels = ds[label_field]
+    counts = Counter(labels)
+    most_common_label, most_common_freq = counts.most_common()[0]
+    new_ds = ds.filter(lambda x: x[label_field] == most_common_label)
+    print(f"Most common label {most_common_label} occurs {most_common_freq } times.")
+    for lbl in range(len(counts)):
+        if lbl != most_common_label:
+            print(f"Rebalancing for label {lbl} / {CLASS_LABELS.int2str(lbl)}")
+            label_rows = ds.filter(lambda x: x[label_field] == lbl)
+            lbl_cnt = len(label_rows)
+            num_to_add = most_common_freq - lbl_cnt
+            print(f"Adding {num_to_add} rows for {lbl} / {CLASS_LABELS.int2str(lbl)}")
+            to_add_idxs = random.choices(range(lbl_cnt), k=num_to_add)
+            print(f"Adding indices: {to_add_idxs}")
+            to_add = label_rows.select(to_add_idxs)
+            #label_rows = concatenate_datasets([label_rows, to_add])
+            new_ds = concatenate_datasets([new_ds, label_rows, to_add])
+    print(f"Dataset augmented from {len(ds)} entries to {len(new_ds)} entries long.")
+    return new_ds.shuffle(seed=shuffle_seed) if shuffle else new_ds
+
 def finetune_for_sequence_classification(
     lang: str,
     pretrained_model: str,
     ds_dict: DatasetDict,
-    training_args: TrainingArguments,
+    training_args_dict: dict,
+    # training_args: TrainingArguments,
     train_idxs: Sequence[int],
     eval_idxs: Sequence[int],
     labels: ClassLabel,
+    label_field: str = "label",
     #   class_names: Sequence[str] = CLASS_NAMES,
     #   train_ds: Dataset,
     #   eval_ds: Dataset,
-    num_layers_to_freeze: int = 0,
     max_length: Optional[int] = 512, #514, #512,
-    truncation: bool = True,
+    num_layers_to_freeze: int = 0,
+    rebalance: bool = True,
     regression: bool = False,
-    label_field = "label",
+    truncation: bool = True,
 ):
     if regression:
         print("RUNNING REGRESSION.")
         model_config = AutoConfig.from_pretrained(pretrained_model, num_labels=1)
         ds_dict = ds_dict.cast_column(label_field, datasets.Value("float64"))
     else:
+        print("RUNNING MULTICLASS CLASSIFICATION.")
         id_label_enum = enumerate(labels.names)
         id2label = {idx: label for idx, label in id_label_enum}
         label2id = {label: idx for idx, label in id_label_enum}
@@ -382,6 +418,12 @@ def finetune_for_sequence_classification(
     tokenized_train_ds = tokenized_ds_train_all.select(train_idxs)
     tokenized_eval_ds = tokenized_ds_train_all.select(eval_idxs)
 
+    if rebalance:
+        #seed = training_args_dict.get("seed")
+        #tokenized_train_ds = rebalance_ds(tokenized_train_ds, seed=seed, shuffle=True, shuffle_seed=seed)
+        tokenized_train_ds = rebalance_ds(tokenized_train_ds, seed=training_args_dict.get("seed"), shuffle=True,
+                shuffle_seed=training_args_dict.get("seed"))
+
     data_collator = DataCollatorWithPadding(
         tokenizer=tokenizer,
         padding="max_length",
@@ -389,7 +431,7 @@ def finetune_for_sequence_classification(
         return_tensors="pt",
     )
 
-    training_args = TrainingArguments(**training_args)
+    training_args: TrainingArguments = TrainingArguments(**training_args_dict)
     print(f"Training per_device_train_batch_size: {training_args.per_device_train_batch_size}.")
     trainer = Trainer(
         model=model,
@@ -445,8 +487,8 @@ def main():
     disable_loading_bar = config.get("disable_loading_bar", config["TrainingArguments"].get("disable_tqdm", False))
     config["TrainingArguments"]["disable_tqdm"] = config["TrainingArguments"].get("disable_tqdm", disable_loading_bar)
 #    freeze_protocol = config.get("FreezingProtocol", [0])
-    base_training_args = config["TrainingArguments"]
-    base_finetuning_args = config.get("FinetuningArguments", {})
+    base_training_args: dict = config.get("TrainingArguments", {})
+    base_finetuning_args: dict = config.get("FinetuningArguments", {})
     phases = config["phases"]
 
 
