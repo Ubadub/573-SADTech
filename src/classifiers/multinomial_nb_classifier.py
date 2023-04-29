@@ -2,16 +2,13 @@
     Multinomial Naive Bayes Classifier
 """
 
-import sys
-import yaml
+# from typing import *
+
 import datasets
 import numpy as np
-
-from typing import *
-
 from sklearn.naive_bayes import MultinomialNB
 
-from classifier import Classifier
+from classifiers import Classifier
 
 
 class NaiveBayesClassifier(Classifier):
@@ -31,7 +28,7 @@ class NaiveBayesClassifier(Classifier):
         self.model = MultinomialNB(fit_prior=True)
 
 
-    def train_predict(self, train_indices: np.array, dev_indices: np.array) -> tuple[np.array, np.array]:
+    def train_predict(self, train_indices: np.ndarray, dev_indices: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Params:
             - train_indices: A list of indices corresponding to the files used for training
@@ -54,16 +51,3 @@ class NaiveBayesClassifier(Classifier):
         predicted = self.model.predict(np.array(dev_vectors))
 
         return dev_gold_labels, predicted
-
-
-if __name__ == '__main__':
-    # for testing purposes
-    config_file = sys.argv[1]
-    with open(config_file, 'r') as ymlfile:
-        config = yaml.load(ymlfile, Loader=yaml.Loader)
-
-    ds_train: datasets.DatasetDict = datasets.load_from_disk(config["data_path"])
-
-    classifier = NaiveBayesClassifier(config=config, ds_train=ds_train)
-
-    classifier.kfold_validation()

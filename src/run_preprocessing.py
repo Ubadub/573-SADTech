@@ -1,4 +1,4 @@
-from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
+from common import CLASS_LABELS, GLOBAL_SEED, N_FOLDS
 
 from preprocessing.dataset_creation import main as dataset_creation
 

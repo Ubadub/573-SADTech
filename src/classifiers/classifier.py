@@ -4,12 +4,11 @@ import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import classification_report
 
-from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
+from common import CLASS_LABELS, GLOBAL_SEED, N_FOLDS
 from preprocessing.create_vectors import Vectors
 
 
 class Classifier:
-
     def __init__(self, config: dict, ds_train: datasets.DatasetDict):
         self.config = config
         feature_vector_wrapper = Vectors(config=config, ds_dict=ds_train)
@@ -19,7 +18,7 @@ class Classifier:
         self.dataset = ds_train["train"]
 
 
-    def train_predict(self, train_idxs: np.array, eval_idxs: np.array) -> tuple[np.array, np.array]:
+    def train_predict(self, train_idxs: np.ndarray, eval_idxs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Abstract Method, necessary for any classifier
 
@@ -76,8 +75,8 @@ class Classifier:
             output.write(f"#### END ####\n\n")
 
 
-    def output_predicted_labels(self, gold_labels: np.array, predicted: np.array,
-                                eval_idxs: np.array, fold_num: int) -> None:
+    def output_predicted_labels(self, gold_labels: np.ndarray, predicted: np.ndarray,
+                                eval_idxs: np.ndarray, fold_num: int) -> None:
         """
             Params:
                 - gold_labels: list of gold labels
@@ -93,18 +92,18 @@ class Classifier:
             output.write("file name \t gold label \t predicted label\n")
             for idx, file_idx in enumerate(eval_idxs):
                 idx = int(idx)
-                output.write(self.dataset[int(file_idx)]["file"] + "\t" + CLASS_NAMES[int(gold_labels[idx])] + \
-                      "\t\t" + CLASS_NAMES[int(predicted[idx])] + "\n")
+                output.write(self.dataset[int(file_idx)]["file"] + "\t" + CLASS_LABELS.names[int(gold_labels[idx])] + \
+                      "\t\t" + CLASS_LABELS.names[int(predicted[idx])] + "\n")
             output.write(f"#### END FOLD {fold_num} ####\n\n")
 
 
-    def output_f1_score(self, gold_labels: np.array, predicted: np.array, fold_num: int,
+    def output_f1_score(self, gold_labels: np.ndarray, predicted: np.ndarray, fold_num: int,
                         prec_avg: list[float], acc_avg: list[float],
                         f1_avg: list[float]) -> None:
         """
         Param:
-            - gold_labels: np.array of gold labels with same indexing scheme as argument predicted
-            - predicted: np.array of predicted labels, with same indexing scheme as argument
+            - gold_labels: np.ndarray of gold labels with same indexing scheme as argument predicted
+            - predicted: np.ndarray of predicted labels, with same indexing scheme as argument
                          gold_labels
             - prec_avg: list of precision metric scores
             - acc_avg: list of accuracy metric scores

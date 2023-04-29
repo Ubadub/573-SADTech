@@ -1,6 +1,6 @@
-data_path: data/tam/train_dataset_dict
-output_path: outputs/D2/tam
-results_path: results
+data_path: ../data/tam/train_dataset_dict
+output_path: ../outputs/D2/tam
+results_path: ../results
 lang: tam
 remove_punc: True
 remove_stop_words: True

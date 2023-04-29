@@ -40,7 +40,7 @@ from transformers import (
     TrainingArguments,
 )
 
-from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
+from common import CLASS_LABELS, GLOBAL_SEED, N_FOLDS
 
 # def configure_logger(log_level=LOG_LEVEL):
 #     logger = logging.getLogger(__name__)
@@ -179,7 +179,7 @@ def compute_metrics(class_names: Sequence[str], regression: bool = False) -> Cal
 #     training_args: TrainingArguments,
 #     train_idxs: Sequence[int],
 #     eval_idxs: Sequence[int],
-#     class_names: Sequence[str] = CLASS_NAMES,
+#     class_names: Sequence[str] = CLASS_LABELS.names,
 #     #   train_ds: Dataset,
 #     #   eval_ds: Dataset,
 #     max_length: Optional[int] = 512,
@@ -364,7 +364,7 @@ def finetune_for_sequence_classification(
     eval_idxs: Sequence[int],
     labels: ClassLabel,
     label_field: str = "label",
-    #   class_names: Sequence[str] = CLASS_NAMES,
+    #   class_names: Sequence[str] = CLASS_LABELS.names,
     #   train_ds: Dataset,
     #   eval_ds: Dataset,
     max_length: Optional[int] = 512, #514, #512,
