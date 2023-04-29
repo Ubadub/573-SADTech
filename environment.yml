@@ -26,8 +26,9 @@ dependencies:
   - ftfy=6.*
   - flax=0.*
   - pyyaml=6.*
-  - types-pyyaml=6.*
+  - types-pyyaml
   - lxml-stubs
+  - types-openpyxl
   - types-Pillow
   - types-requests
   - types-setuptools

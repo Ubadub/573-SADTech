@@ -31,6 +31,7 @@ dependencies:
   - pyyaml=6.*
   - types-pyyaml=6.*
   - lxml-stubs
+  - types-openpyxl
   - types-Pillow
   - types-requests
   - types-setuptools
