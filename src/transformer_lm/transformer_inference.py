@@ -23,6 +23,7 @@ from common import CLASS_LABELS, GLOBAL_SEED, N_FOLDS
 # BASE_MODEL_PATH = "outputs/D2/transformer_model/"
 TOKENIZER_KWARGS = {"padding": True, "truncation": True, "max_length": 512}
 
+
 def _infer_map(pipe, **pipe_kwargs):
     def _(x):
         x["inferred_label"] = pipe(x["text"], **pipe_kwargs)
@@ -31,7 +32,11 @@ def _infer_map(pipe, **pipe_kwargs):
     return _
 
 
-def infer(lang: str, dataset_dict_path: Optional[str] = None, model_base_path: Optional[str] = None):
+def infer(
+    lang: str,
+    dataset_dict_path: Optional[str] = None,
+    model_base_path: Optional[str] = None,
+):
     if dataset_dict_path is None:
         dataset_dict_path = os.path.abspath(f"../data/{lang}/train_dataset_dict")
     if model_base_path is None:

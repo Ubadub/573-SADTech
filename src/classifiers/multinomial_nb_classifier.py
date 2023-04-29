@@ -12,7 +12,6 @@ from classifiers import Classifier
 
 
 class NaiveBayesClassifier(Classifier):
-
     def __init__(self, config: dict, ds_train: datasets.DatasetDict) -> None:
         """
         Params:
@@ -21,14 +20,12 @@ class NaiveBayesClassifier(Classifier):
 
         Initializes a Naive Bayes Classifier Model
         """
-        super().__init__(
-            config=config,
-            ds_train=ds_train
-        )
+        super().__init__(config=config, ds_train=ds_train)
         self.model = MultinomialNB(fit_prior=True)
 
-
-    def train_predict(self, train_indices: np.ndarray, dev_indices: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def train_predict(
+        self, train_indices: np.ndarray, dev_indices: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Params:
             - train_indices: A list of indices corresponding to the files used for training

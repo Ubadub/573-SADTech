@@ -26,33 +26,34 @@ from typing import *
 
 
 class Vectors:
-    TAM_STOP_WORDS = Tamil().Defaults.stop_words
-    MAL_STOP_WORDS = Malayalam().Defaults.stop_words
+    TAM_STOP_WORDS = Tamil.Defaults.stop_words
+    MAL_STOP_WORDS = Malayalam.Defaults.stop_words
 
-
-    def __init__(self, config: Union[dict, str],
-                 ds_dict: Optional[Union[datasets.DatasetDict, str]] = None,
-                 vec_type: Optional[str] = None
-                 ) -> None:
+    def __init__(
+        self,
+        config: Union[dict, str],
+        ds_dict: Optional[Union[datasets.DatasetDict, str]] = None,
+        vec_type: Optional[str] = None,
+    ) -> None:
         """
-            Params:
-                - config:
-                    A python dictionary representing the specified config.yml file
-                        or
-                    A file path to a specified config.yml file
-                - ds_dict:
-                    A datasets.DatasetDict object of text data to be vectorized
-                        or
-                    A file path to a saved datasets.DatasetDict of text data to be vectorized
-                        or
-                    If not passed a datasets.DatasetDict object, looks in the config file for a file path
-                        to a saved datasets.DatasetDict object
-                - vec_type:
-                    A string specifying which type of vectorization should occur
-                        or
-                    If not passed a string, looks in the config file for a specified type of vectorization
+        Params:
+            - config:
+                A python dictionary representing the specified config.yml file
+                    or
+                A file path to a specified config.yml file
+            - ds_dict:
+                A datasets.DatasetDict object of text data to be vectorized
+                    or
+                A file path to a saved datasets.DatasetDict of text data to be vectorized
+                    or
+                If not passed a datasets.DatasetDict object, looks in the config file for a file path
+                    to a saved datasets.DatasetDict object
+            - vec_type:
+                A string specifying which type of vectorization should occur
+                    or
+                If not passed a string, looks in the config file for a specified type of vectorization
 
-            Initializes the vector wrapper class
+        Initializes the vector wrapper class
         """
         self.config = Vectors._open_config(config)
         self.ds_dict = self._open_ds_dict(ds_dict)
@@ -62,35 +63,36 @@ class Vectors:
     @staticmethod
     def _open_config(config: Union[dict, str]) -> dict:
         """
-            Params:
-                - config: Takes either a config.yml file path as a string or a config file representation as a
-                    dictionary
+        Params:
+            - config: Takes either a config.yml file path as a string or a config file representation as a
+                dictionary
 
-            If passed a config file path, will read its contents
+        If passed a config file path, will read its contents
 
-            Returns:
-                - A dictionary representation of the given config.yml file
+        Returns:
+            - A dictionary representation of the given config.yml file
         """
         if isinstance(config, str):
-            with open(config, 'r') as ymlfile:
+            with open(config, "r") as ymlfile:
                 config = yaml.load(ymlfile, Loader=yaml.Loader)
         return config
 
-
-    def _open_ds_dict(self, ds_dict: Optional[Union[datasets.DatasetDict, str]] = None) -> dict:
+    def _open_ds_dict(
+        self, ds_dict: Optional[Union[datasets.DatasetDict, str]] = None
+    ) -> dict:
         """
-            Params:
-                - ds_dict: Optionally takes either a datasets.DatasetDict object or a path to a
-                - saved datasets.DatasetDict file
+        Params:
+            - ds_dict: Optionally takes either a datasets.DatasetDict object or a path to a
+            - saved datasets.DatasetDict file
 
-            If passed a saved datasets.DatasetDict file path, will read its contents
-            If not passed an argument, will load the datasets.DatasetDict from the file path specified
-                in the config file
-            Cleans (removes stopwords, removes punctuation) the given datasets.DatasetDict object
-            based on the config file passed to self
+        If passed a saved datasets.DatasetDict file path, will read its contents
+        If not passed an argument, will load the datasets.DatasetDict from the file path specified
+            in the config file
+        Cleans (removes stopwords, removes punctuation) the given datasets.DatasetDict object
+        based on the config file passed to self
 
-            Returns:
-                - A datasets.DatasetDict object with cleaned text
+        Returns:
+            - A datasets.DatasetDict object with cleaned text
         """
 
         if isinstance(ds_dict, str):
@@ -115,24 +117,29 @@ class Vectors:
         line = line + " "
 
         if self.config["remove_punc"]:
-            line = re.sub(r",|;|\"|\'|\?|:|!", "", line)    # removes punctuation
-            line = re.sub(r"\\", "", line)                  # removes punctuation
-            line = re.sub(r"\.\s", " ", line)               # removes punctuation
+            line = re.sub(r",|;|\"|\'|\?|:|!", "", line)  # removes punctuation
+            line = re.sub(r"\\", "", line)  # removes punctuation
+            line = re.sub(r"\.\s", " ", line)  # removes punctuation
 
         if self.config["remove_stop_words"]:
-            stop_words = self.TAM_STOP_WORDS if self.config["lang"] == "tam" else self.MAL_STOP_WORDS
-            line = " ".join([word for word in line.split()
-                                if word not in stop_words]) # removes stop words
+            stop_words = (
+                self.TAM_STOP_WORDS
+                if self.config["lang"] == "tam"
+                else self.MAL_STOP_WORDS
+            )
+            line = " ".join(
+                [word for word in line.split() if word not in stop_words]
+            )  # removes stop words
 
         if self.config["remove_num"]:
-            line = re.sub(r"\s\S*?\d\S*?\s", " ", line)     # removes words that contain numbers
-            line = re.sub(r"\d", "", line)                  # removes numbers
+            line = re.sub(
+                r"\s\S*?\d\S*?\s", " ", line
+            )  # removes words that contain numbers
+            line = re.sub(r"\d", "", line)  # removes numbers
 
         # line = re.sub(r"[a-zA-Z]", " ", line)             # removes single letters
 
         return line.strip()
-
-
 
     def _do_preprocessing(self, ds_dict: datasets.DatasetDict) -> datasets.DatasetDict:
         """
@@ -146,40 +153,43 @@ class Vectors:
         Returns
             - a datasetDict with cleaned text
         """
-        if self.config["remove_punc"] or self.config["remove_stop_words"] or self.config["remove_num"]:
+        if (
+            self.config["remove_punc"]
+            or self.config["remove_stop_words"]
+            or self.config["remove_num"]
+        ):
             ds_dict["text"] = self._clean_up_text(ds_dict["text"])
         return ds_dict
 
-
     def _tfidf_vectors(self) -> spmatrix:
         """
-            Return:
-                - document-tfidf vectors using sklearns TfidfVectorizer as a spmatrix
+        Return:
+            - document-tfidf vectors using sklearns TfidfVectorizer as a spmatrix
         """
         text = np.array(self.ds_dict["train"]["text"])
 
-        tf_idf = TfidfVectorizer(input="content",
-                                 encoding="utf-8",
-                                 ngram_range=(1, 3),
-                                 binary=True,
-                                 smooth_idf=False
-                                 )
+        tf_idf = TfidfVectorizer(
+            input="content",
+            encoding="utf-8",
+            ngram_range=(1, 3),
+            binary=True,
+            smooth_idf=False,
+        )
         tfidf_vectors = tf_idf.fit_transform(text)
 
         return tfidf_vectors
 
-
     def vec_type(self, vec_type: Optional[str] = None) -> str:
         """
-            Params:
-                - vec_type: Takes an optional type of vectorization, and makes vectors of the specified type
-                - Otherwise, will make vectors of the type specified in the config.yml file
+        Params:
+            - vec_type: Takes an optional type of vectorization, and makes vectors of the specified type
+            - Otherwise, will make vectors of the type specified in the config.yml file
 
-            Creates a document vector representation of a datasets.DatasetDict object based on the specified
-                type of vectorization
+        Creates a document vector representation of a datasets.DatasetDict object based on the specified
+            type of vectorization
 
-            Returns:
-                - Document vectors as a spamatrix
+        Returns:
+            - Document vectors as a spamatrix
 
         """
         if vec_type is None:
@@ -187,13 +197,12 @@ class Vectors:
 
         return vec_type
 
-
     def create_vectors(self):
         """
-            Creates document feature vectors based on the specified type of vectorization
+        Creates document feature vectors based on the specified type of vectorization
 
-            Return:
-                - document feature vectors as a spmatrix
+        Return:
+            - document feature vectors as a spmatrix
         """
         if self.vec_type == "tfidf":
             # Calculate TF-IDF Vectors
@@ -202,25 +211,25 @@ class Vectors:
         # TODO: add more vectorization methods here
         # elif self.vec_type == "...":
         else:  # otherwise not a known vectorization method
-            raise ValueError(f"config argument {self.config['vectors']} not a known vectorization method")
+            raise ValueError(
+                f"config argument {self.config['vectors']} not a known vectorization method"
+            )
 
         return vectors
 
-
     def get_vectors(self) -> spmatrix:
         """
-            Getter method,
-            Return:
-                - the features vectors as a spmatrix
+        Getter method,
+        Return:
+            - the features vectors as a spmatrix
         """
         return self.vectors
-
 
 
 def main():
     # for testing purposes
     config_file = sys.argv[1]
-    with open(config_file, 'r') as ymlfile:
+    with open(config_file, "r") as ymlfile:
         config = yaml.load(ymlfile, Loader=yaml.Loader)
 
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(config["data_path"])
@@ -236,5 +245,5 @@ def main():
     print(tfidf_vectors)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

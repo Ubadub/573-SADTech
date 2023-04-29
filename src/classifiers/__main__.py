@@ -8,7 +8,7 @@ from classifiers import NaiveBayesClassifier
 
 # for testing purposes
 config_file = sys.argv[1]
-with open(config_file, 'r') as ymlfile:
+with open(config_file, "r") as ymlfile:
     config = yaml.load(ymlfile, Loader=yaml.Loader)
 
 dataset_path = os.path.abspath(config["data_path"])
