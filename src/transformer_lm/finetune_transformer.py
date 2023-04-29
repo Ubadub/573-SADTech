@@ -609,7 +609,7 @@ def main():
                 lang=lang,
                 pretrained_model=curr_pretrained_model,
                 ds_dict=ds,
-                training_args=training_args,
+                training_args_dict=training_args,
                 train_idxs=train_idxs,
                 eval_idxs=eval_idxs,
                 labels=CLASS_LABELS,
