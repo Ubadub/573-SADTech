@@ -5,6 +5,7 @@ channels:
   - defaults
 dependencies:
   - python=3.9.*
+  - pip=23.*
   - pytorch=2.*
   - black
   - mypy
@@ -16,6 +17,7 @@ dependencies:
   - scipy
   - numpy
   - pandas=2.*
+  - pandas-stubs
   - scikit-learn=1.*
   - transformers=4.*
   - accelerate
@@ -25,3 +27,11 @@ dependencies:
   - flax=0.*
   - pyyaml=6.*
   - types-pyyaml=6.*
+  - lxml-stubs
+  - types-Pillow
+  - types-requests
+  - types-setuptools
+  - types-tabulate
+  - pip:
+    - types-pywin32
+    - types-tqdm
