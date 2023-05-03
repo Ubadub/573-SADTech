@@ -12,15 +12,15 @@ from classifiers import Classifier
 
 
 class NaiveBayesClassifier(Classifier):
-    def __init__(self, config: dict, ds_train: datasets.DatasetDict) -> None:
+    def __init__(self, config: dict, ds_dict: datasets.DatasetDict) -> None:
         """
         Params:
             - config: a configuration .yml file
-            - ds_train: a huggingface datasets object containing the train data
+            - ds_dict: a huggingface datasets object containing the train data
 
         Initializes a Naive Bayes Classifier Model
         """
-        super().__init__(config=config, ds_train=ds_train)
+        super().__init__(config=config, ds_dict=ds_dict)
         self.model = MultinomialNB(fit_prior=True)
 
     def train_predict(
