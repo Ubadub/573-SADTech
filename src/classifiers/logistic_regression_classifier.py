@@ -21,7 +21,7 @@ class LogisticRegressionClassifier(Classifier):
         Initializes a Logistic Regression Classifier Model
         """
         super().__init__(config=config, ds_dict=ds_dict)
-        self.model = LogisticRegression(multi_class="multinomial")
+        self.model = LogisticRegression(class_weight="balanced", multi_class="multinomial")
 
     def train_predict(
         self, train_indices: np.ndarray, dev_indices: np.ndarray

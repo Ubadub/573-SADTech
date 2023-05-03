@@ -16,8 +16,21 @@ class Classifier(ABC):
         feature_vector_wrapper = Vectors(config=config, ds_dict=ds_dict)
         self.feature_vectors = feature_vector_wrapper.get_vectors().toarray()
         self.gold_labels = np.array(ds_dict["train"]["label"])
-        self.model = None
+        self.model = self._choose_model()
         self.ds = ds_dict["train"]
+
+
+    def _choose_model(self):
+        cl = self.config["classifier"]
+        if cl == "nb":
+            return "Naive Bayes"
+        elif cl == "lr":
+            return "Logistic Regression"
+        elif cl == "rf":
+            return "Random Forest"
+        else:
+            raise ValueError(f"Unrecognized classifier method; got {cl} instead.")
+
 
     @abstractmethod
     def train_predict(
@@ -43,12 +56,7 @@ class Classifier(ABC):
 
         with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
             output.write("#### Lang: " + self.config["lang"] + " ####\n")
-            if self.config["classifier"] == "nb":
-                output.write("#### Naive Bayes Evaluation Output ####\n")
-            else:
-                raise ValueError(
-                    "Please include possible classifier in config.yml file."
-                )
+            output.write(f"#### {self.model} Evaluation Output ####\n")
 
         prec_avg = []
         acc_avg = []
