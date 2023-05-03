@@ -408,14 +408,28 @@ def finetune_for_sequence_classification(
     for param in model.base_model.embeddings.parameters():
         param.requires_grad = False
 
-    print(f"Freezing {num_layers_to_freeze} layers.")
-    for layer_idx, layer in enumerate(model.base_model.encoder.layer):
-        for param in layer.parameters():
-            param.requires_grad = layer_idx >= num_layers_to_freeze
-        if layer_idx >= num_layers_to_freeze:
-            print(f"Layer {layer_idx} NOT frozen.")
-        else:
-            print(f"Layer {layer_idx} frozen.")
+    if model.config.model_type == "albert":
+        print(f"Setting hidden mapping in requires_grad to: {num_layers_to_freeze <= 0}")
+        for param in model.base_model.encoder.embedding_hidden_mapping_in.parameters():
+            param.requires_grad = num_layers_to_freeze <= 0
+
+        for layer_group_idx, layer_group in enumerate(model.base_model.encoder.albert_layer_groups):
+            for param in layer_group.parameters():
+                param.requires_grad = layer_group_idx >= num_layers_to_freeze
+            if layer_group_idx >= num_layers_to_freeze:
+                print(f"Layer group {layer_group_idx} NOT frozen.")
+            else:
+                print(f"Layer group {layer_group_idx} frozen.")
+
+    else: # BERT - TODO: make this an actual check
+        print(f"Freezing {num_layers_to_freeze} layers.")
+        for layer_idx, layer in enumerate(model.base_model.encoder.layer):
+            for param in layer.parameters():
+                param.requires_grad = layer_idx >= num_layers_to_freeze
+            if layer_idx >= num_layers_to_freeze:
+                print(f"Layer {layer_idx} NOT frozen.")
+            else:
+                print(f"Layer {layer_idx} frozen.")
 
     #    with torch.no_grad():
     #        model_state_dict = model.state_dict()
@@ -490,15 +504,17 @@ def finetune_for_sequence_classification(
     return final_model_path
 
 
-def main():
-    parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description="Finetune a pretrained model from HuggingFace",
-    )
-    parser.add_argument("-c", "--config", required=True)
+#def main():
+def train(config_path: dict):
+#    parser: argparse.ArgumentParser = argparse.ArgumentParser(
+#        description="Finetune a pretrained model from HuggingFace",
+#    )
+#    parser.add_argument("-c", "--config", required=True)
+#
+#    args = parser.parse_args()
 
-    args = parser.parse_args()
-
-    with open(args.config, "r") as f:
+    #with open(args.config, "r") as f:
+    with open(config_path, "r") as f:
         config = yaml.unsafe_load(f.read())
 
     base_pretrained_model = config["pretrained_model"]
@@ -609,7 +625,7 @@ def main():
                 lang=lang,
                 pretrained_model=curr_pretrained_model,
                 ds_dict=ds,
-                training_args=training_args,
+                training_args_dict=training_args,
                 train_idxs=train_idxs,
                 eval_idxs=eval_idxs,
                 labels=CLASS_LABELS,
@@ -635,5 +651,5 @@ def main():
 #    trainer_config = args.trainer_config
 
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()

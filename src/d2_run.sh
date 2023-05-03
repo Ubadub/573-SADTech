@@ -43,11 +43,11 @@ python -m classifiers $MAL_NB_CONFIG
 
 echo "Running Finetuned Transformer LM Inference - TAMIL"
 echo "### TAMIL ###" >> $SCORES_FILE
-python -m transformer_lm tam infer >> $SCORES_FILE
+python -m transformer_lm infer -l tam >> $SCORES_FILE
 
 echo "Running Finetuned Transformer LM Inference - MALAYALAM"
 echo "### MALAYALAM ###" >> $SCORES_FILE
-python -m transformer_lm mal infer >> $SCORES_FILE
+python -m transformer_lm infer -l mal >> $SCORES_FILE
 
 # Go back to starting directory
 cd $owd

@@ -11,13 +11,13 @@ from preprocessing.create_vectors import Vectors
 
 
 class Classifier(ABC):
-    def __init__(self, config: dict, ds_train: datasets.DatasetDict):
+    def __init__(self, config: dict, ds_dict: datasets.DatasetDict):
         self.config = config
-        feature_vector_wrapper = Vectors(config=config, ds_dict=ds_train)
+        feature_vector_wrapper = Vectors(config=config, ds_dict=ds_dict)
         self.feature_vectors = feature_vector_wrapper.get_vectors().toarray()
-        self.gold_labels = np.array(ds_train["train"]["label"])
+        self.gold_labels = np.array(ds_dict["train"]["label"])
         self.model = None
-        self.dataset = ds_train["train"]
+        self.ds = ds_dict["train"]
 
     @abstractmethod
     def train_predict(
@@ -101,7 +101,7 @@ class Classifier(ABC):
             for idx, file_idx in enumerate(eval_idxs):
                 idx = int(idx)
                 output.write(
-                    self.dataset[int(file_idx)]["file"]
+                    self.ds[int(file_idx)]["file"]
                     + "\t"
                     + CLASS_LABELS.names[int(gold_labels[idx])]
                     + "\t\t"
