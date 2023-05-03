@@ -409,11 +409,15 @@ def finetune_for_sequence_classification(
         param.requires_grad = False
 
     if model.config.model_type == "albert":
-        print(f"Setting hidden mapping in requires_grad to: {num_layers_to_freeze <= 0}")
+        print(
+            f"Setting hidden mapping in requires_grad to: {num_layers_to_freeze <= 0}"
+        )
         for param in model.base_model.encoder.embedding_hidden_mapping_in.parameters():
             param.requires_grad = num_layers_to_freeze <= 0
 
-        for layer_group_idx, layer_group in enumerate(model.base_model.encoder.albert_layer_groups):
+        for layer_group_idx, layer_group in enumerate(
+            model.base_model.encoder.albert_layer_groups
+        ):
             for param in layer_group.parameters():
                 param.requires_grad = layer_group_idx >= num_layers_to_freeze
             if layer_group_idx >= num_layers_to_freeze:
@@ -421,7 +425,7 @@ def finetune_for_sequence_classification(
             else:
                 print(f"Layer group {layer_group_idx} frozen.")
 
-    else: # BERT - TODO: make this an actual check
+    else:  # BERT - TODO: make this an actual check
         print(f"Freezing {num_layers_to_freeze} layers.")
         for layer_idx, layer in enumerate(model.base_model.encoder.layer):
             for param in layer.parameters():
@@ -504,16 +508,8 @@ def finetune_for_sequence_classification(
     return final_model_path
 
 
-#def main():
 def train(config_path: dict):
-#    parser: argparse.ArgumentParser = argparse.ArgumentParser(
-#        description="Finetune a pretrained model from HuggingFace",
-#    )
-#    parser.add_argument("-c", "--config", required=True)
-#
-#    args = parser.parse_args()
-
-    #with open(args.config, "r") as f:
+    # with open(args.config, "r") as f:
     with open(config_path, "r") as f:
         config = yaml.unsafe_load(f.read())
 
@@ -649,7 +645,3 @@ def train(config_path: dict):
 #    config = args.config
 #    model_config = args.model_config
 #    trainer_config = args.trainer_config
-
-
-#if __name__ == "__main__":
-#    main()

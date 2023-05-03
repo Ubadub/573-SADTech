@@ -32,7 +32,9 @@ class TestCleanUpLine(unittest.TestCase):
 
     def test_num(self):
         # not entirely sure what to do with ஏ1 - currently just removes the whole token
-        actual = "வீக்என்டுக்கு ஏ1 வந்து பயங்கரமா ஸ்கோர் பண்ணியிருக்கிறாரு அப்படின்னுதான்"
+        actual = (
+            "வீக்என்டுக்கு ஏ1 வந்து பயங்கரமா ஸ்கோர் பண்ணியிருக்கிறாரு அப்படின்னுதான்"
+        )
         exp = "வீக்என்டுக்கு பயங்கரமா ஸ்கோர் பண்ணியிருக்கிறாரு அப்படின்னுதான்"
         self.assertEqual(clean_up_line(actual, self.tam_stop_words), exp)
 
@@ -48,7 +50,7 @@ class TestCleanUpLine(unittest.TestCase):
 
     def test_quotes(self):
         # testing removal of quotes
-        actual = "நான் உன் போன் ஏன் போனா மிஸ்டேக் பண்ணி எடுத்துட்டு போயிட்டேன்\" . \" சோ,"
+        actual = 'நான் உன் போன் ஏன் போனா மிஸ்டேக் பண்ணி எடுத்துட்டு போயிட்டேன்" . " சோ,'
         exp = "போன் போனா மிஸ்டேக் பண்ணி எடுத்துட்டு போயிட்டேன் சோ"
         self.assertEqual(clean_up_line(actual, self.tam_stop_words), exp)
 
@@ -58,5 +60,5 @@ class TestCleanUpLine(unittest.TestCase):
 #         self.assertEqual("a", "a")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
