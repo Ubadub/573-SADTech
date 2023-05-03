@@ -1,0 +1,49 @@
+pretrained_model: "ai4bharat/indic-bert"
+lang: tam_mal_shuffled #tam
+run_id: indic_bert_rebalance_multiclass_config2
+n_splits: 4
+#n_splits: 5
+#dataset_dict_path: f"../data/{lang}/train_dataset_dict"
+use_gpu: True
+disable_loading_bar: True
+TrainingArguments:
+  auto_find_batch_size: True
+  per_device_train_batch_size: 70
+  per_device_eval_batch_size: 70
+  evaluation_strategy: epoch
+  # evaluation_strategy: steps
+  log_level: debug
+  logging_strategy: epoch
+  # logging_strategy: steps
+  # logging_first_step: True
+  # logging_steps: 1
+  save_strategy: epoch
+  # save_strategy: epoch
+  # seed: !!python/name:__main__.GLOBAL_SEED
+  seed: 573
+  load_best_model_at_end: False
+  resume_from_checkpoint: False
+  disable_tqdm: True
+  # push_to_hub: False
+FinetuningArguments:
+  rebalance: True
+phases:
+  - TrainingArguments:
+      learning_rate: 5.0e-5
+      num_train_epochs: 25
+      # weight_decay: 0.01
+      save_strategy: epoch
+    FinetuningArguments:
+      num_layers_to_freeze: 1
+  - TrainingArguments:
+      learning_rate: 1.0e-7
+      num_train_epochs: 10
+      weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 0
+  - TrainingArguments:
+      learning_rate: 1.0e-5
+      num_train_epochs: 5
+      weight_decay: 0.01
+    FinetuningArguments:
+      num_layers_to_freeze: 1
