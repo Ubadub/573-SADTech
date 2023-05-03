@@ -1,15 +1,12 @@
 from argparse import ArgumentParser
 import sys
 
+from .finetune_transformer import train
 from .transformer_inference import infer
 
 
-def train(*args, **kwargs):
-    raise NotImplementedError
-
-
 PARSER_CONFIG = {
-    "prog": "python -m transformers",
+    "prog": "python -m transformer_lm",
     "description": "Finetune or do inference with transformer LMs.",
 }
 
@@ -23,15 +20,31 @@ SUBPARSERS_CONFIG = {
 }
 
 parser = ArgumentParser(**PARSER_CONFIG)
-parser.add_argument("lang")
 subparsers = parser.add_subparsers(**SUBPARSERS_CONFIG)
 
 inf_subparser = subparsers.add_parser(
     "infer", aliases=["i", "inf"], description="Do inference"
 )
 inf_subparser.set_defaults(func=infer)
+inf_subparser.add_argument(
+    "-l",
+    "--lang",
+    required=True,
+    choices=["tam", "mal"],
+    help="Language (tam for Tamil, mal for Malayalam)",
+)
 train_subparser = subparsers.add_parser(
-    "train", aliases=["t", "tr", "finetune"], description="Finetune"
+    "train",
+    aliases=["t", "tr", "finetune"],
+    description="Finetune a pretrained model from HuggingFace",
+)
+train_subparser.add_argument(
+    "-c",
+    "--config",
+    required=True,
+    dest="config_path",
+    metavar="PATH_TO_CONFIG.YML",
+    help="Path to the config YAML file for this train run.",
 )
 train_subparser.set_defaults(func=train)
 
