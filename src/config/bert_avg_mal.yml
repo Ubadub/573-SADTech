@@ -1,0 +1,12 @@
+data_path: ../data/mal/train_dataset_dict
+embedding_path: ../outputs/embeddings
+output_path: ../outputs/D2/mal
+results_path: ../results
+lang: mal
+remove_punc: False
+remove_stop_words: False
+remove_num: False
+vectors: bert_avg
+classifier: nb
+pretrained_model: "xlm-roberta-base"
+tfidf_weighted: False
