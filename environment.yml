@@ -19,6 +19,7 @@ dependencies:
   - pandas=2.*
   - pandas-stubs
   - scikit-learn=1.*
+  - imbalanced-learn=0.*
   - transformers=4.*
   - accelerate
   - sentencepiece=0.*
