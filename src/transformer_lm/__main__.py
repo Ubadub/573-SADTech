@@ -35,7 +35,7 @@ inf_subparser.add_argument(
 )
 train_subparser = subparsers.add_parser(
     "train",
-    aliases=["t", "tr", "finetune"],
+    aliases=["t", "tr", "train", "f", "finetune"],
     description="Finetune a pretrained model from HuggingFace",
 )
 train_subparser.add_argument(
@@ -52,7 +52,5 @@ args = parser.parse_args()
 
 func_kwargs = dict(vars(args))
 del func_kwargs["func"]
-
-# sys.exit()
 
 args.func(**func_kwargs)

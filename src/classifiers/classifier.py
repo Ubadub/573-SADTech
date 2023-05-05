@@ -1,35 +1,155 @@
 from abc import abstractmethod, ABC
+import pickle
 
-import datasets
+from datasets import Dataset, DatasetDict
 import numpy as np
-
-from sklearn.model_selection import StratifiedKFold
+from sklearn.base import BaseEstimator
 from sklearn.metrics import classification_report
+from sklearn.model_selection import StratifiedKFold
 
 from common import CLASS_LABELS, GLOBAL_SEED, N_FOLDS
 from preprocessing.create_vectors import Vectors
 
 
 class Classifier(ABC):
-    def __init__(self, config: dict, ds_dict: datasets.DatasetDict):
-        self.config = config
-        feature_vector_wrapper = Vectors(config=config, ds_dict=ds_dict)
-        self.feature_vectors = feature_vector_wrapper.get_vectors().toarray()
-        self.gold_labels = np.array(ds_dict["train"]["label"])
-        self.model = None
-        self.ds = ds_dict["train"]
+    """
+    Wrapper around a `sklearn.base.BaseEstimator` for training models with a given
+    vectorization scheme over a given `datasets.Dataset` instance.
+    """
+
+    CFG_MODEL_FIELD = "model"
+    CFG_MODEL_ARGS_FIELD = "ModelArguments"
+    CFG_MODEL_KWARGS_FIELD = "ModelKeywordArguments"
+    CFG_VECTORIZATION_ARGS_FIELD = "VectorizationArguments"
+    CFG_VECTORIZATION_KWARGS_FIELD = "VectorizationKeywordArguments"
+
+    def __init__(self, config: dict):
+        """
+        Constructor.
+
+        Args:
+            config:
+                A dictionary (e.g. created from a YAML config file) containing various
+                configuration settings and variables.
+                Should contain (key : value):
+                    `Classifer.CFG_MODEL`:
+                        a class that subclasses from `sklearn.base.BaseEstimator`.
+
+                Optionally may contain:
+                    `Classifer.CFG_MODEL_ARGS`:
+                        any keyword arguments to pass to the model constructor.
+
+                    `Classifer.CFG_MODEL_KWARGS`:
+                        any keyword arguments to pass to the model constructor.
+        """
+        self._cfg = config
+        model_args: Iterable = self._cfg.get(self.CFG_MODEL_ARGS_FIELD, []) or []
+        model_kwargs: dict = self._cfg.get(self.CFG_MODEL_KWARGS_FIELD, {}) or {}
+        self._vectorization_args: Iterable = (
+            self._cfg.get(self.CFG_VECTORIZATION_ARGS_FIELD, []) or []
+        )
+        self._vectorization_kwargs: dict = (
+            self._cfg.get(self.CFG_VECTORIZATION_KWARGS_FIELD, {}) or {}
+        )
+        if self.CFG_MODEL_FIELD in self._cfg:
+            if issubclass(self._cfg[self.CFG_MODEL_FIELD], BaseEstimator):
+                self._model: BaseEstimator = self._cfg[self.CFG_MODEL_FIELD](
+                    *model_args, **model_kwargs
+                )
+            else:
+                raise ValueError(
+                    f"Field {self.CFG_MODEL_FIELD} in config file must be a subclass of "
+                    "sklearn.base.BaseEstimator, but is actually of type "
+                    f"{type(self._cfg[self.CFG_MODEL_FIELD])}."
+                )
+        else:
+            raise ValueError(f"Config file must have {self.CFG_MODEL_FIELD} field.")
+        # self._ds = ds  # ds_dict["train"]
+        # feature_vector_wrapper = Vectors(config=config, ds_dict=ds_dict)
+        # self.feature_vectors = feature_vector_wrapper.get_vectors().toarray()
+        # self.gold_labels = np.array(ds_dict["train"]["label"])
 
     @abstractmethod
-    def train_predict(
-        self, train_idxs: np.ndarray, eval_idxs: np.ndarray
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """
-        Abstract Method, necessary for any classifier
+    def _vectorize(
+        self, ds: Dataset, *args, text_field: str = "text", **kwargs
+    ) -> np.ndarray:
+        """Vectorize the given dataset. The vectorization algorithm/protocol to use
+        should be implemented by subclasses of this class.
 
-        This class is supposed to implement both the training and inference time of a model, returning
-            gold labels and predicted labels (in that order) in a tuple
+        Given a dataset of num_instances entries, returns an `np.ndarray` instance of
+        shape (num_instances, num_features) where num_features is determined by the
+        vectorization algorithm, which should be implemented by subclasses of this
+        class.
+
+        Args:
+            ds:
+                The dataset to use, containing num_instances rows.
+            text_field:
+                name of the field in ds that holds the text to vectorize.
+
+        Returns:
+            An `np.ndarray` instance of shape (num_instances, num_features) where
+            num_features is determined by the vectorization algorithm.
         """
 
+    def train(self, train_ds: Dataset, label_field: str = "label") -> None:
+        """Train the model using the given training dataset.
+
+        Args:
+            ds:
+                The dataset to use, containing num_instances rows.
+            label_field:
+                name of the field in ds that holds the class label.
+        """
+        X = self._vectorize(
+            train_ds, *self._vectorization_args, **self._vectorization_kwargs
+        )
+        print("Shape of X:", X.shape)
+        y_true = train_ds[label_field]
+        self._model = self._model.fit(X, y_true)
+
+    def predict(self, eval_ds: Dataset) -> np.ndarray:
+        """Perform classification on the given dataset.
+
+        Args:
+            eval_ds:
+                The dataset to use, containing num_instances rows.
+
+        Returns:
+            An `np.ndarray` instance of shape (num_instances,) where each entry contains
+            a corresponding class prediction.
+        """
+        X = self._vectorize(
+            eval_ds, *self._vectorization_args, **self._vectorization_kwargs
+        )
+        return self._model.predict(X)
+
+    def save_to_file(self, fpath: str) -> None:
+        """Save an instance of this class via pickling to a given file.
+
+        Args:
+            fpath:
+                Path to the file to which the pickled data will be written.
+        """
+        with open(fpath, "wb") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def from_file(cls, fpath: str) -> "Classifier":
+        """Load an instance of this class from the pickled data in a file.
+
+        Args:
+            fpath:
+                Path to the file containing the pickled data.
+
+        Returns:
+            An instance of this class, unpickled from the given file.
+        """
+        with open(fpath, "rb") as f:
+            return pickle.load(f)
+
+
+class OldClassifier:
     def kfold_validation(self, kfolds: int = N_FOLDS) -> None:
         """
         Params:
@@ -41,9 +161,9 @@ class Classifier(ABC):
         skfolds = StratifiedKFold(n_splits=kfolds)  # does not shuffle
         splits = skfolds.split(X=self.feature_vectors, y=self.gold_labels)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
-            output.write("#### Lang: " + self.config["lang"] + " ####\n")
-            if self.config["classifier"] == "nb":
+        with open(self._cfg["results_path"] + "/D2_scores.out", "a") as output:
+            output.write("#### Lang: " + self._cfg["lang"] + " ####\n")
+            if self._cfg["classifier"] == "nb":
                 output.write("#### Naive Bayes Evaluation Output ####\n")
             else:
                 raise ValueError(
@@ -71,7 +191,7 @@ class Classifier(ABC):
         acc_avg = sum(acc_avg) / len(acc_avg)
         f1_avg = sum(f1_avg) / len(f1_avg)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self._cfg["results_path"] + "/D2_scores.out", "a") as output:
             output.write(f"#### Pooled F1 Scores ####\n")
             output.write("weighted average precision score: " + str(prec_avg) + "\n")
             output.write("accuracy score: " + str(acc_avg) + "\n")
@@ -92,16 +212,16 @@ class Classifier(ABC):
             - eval_idxs: list of evaluation indexes
             - fold_num: fold number
 
-        Outputs the file name, gold label, and predicted label for the given gold labels and
-            predicted labels to the output path specified by the config.yml file.
+        Outputs the file name, gold label, and predicted label for the given gold labels
+        and predicted labels to the output path specified by the config.yml file.
         """
-        with open(self.config["output_path"] + "/nb_output.txt", "a") as output:
+        with open(self._cfg["output_path"] + "/nb_output.txt", "a") as output:
             output.write(f"#### FOLD {fold_num} ####\n")
             output.write("file name \t gold label \t predicted label\n")
             for idx, file_idx in enumerate(eval_idxs):
                 idx = int(idx)
                 output.write(
-                    self.ds[int(file_idx)]["file"]
+                    self._ds[int(file_idx)]["file"]
                     + "\t"
                     + CLASS_LABELS.names[int(gold_labels[idx])]
                     + "\t\t"
@@ -146,7 +266,7 @@ class Classifier(ABC):
         acc_avg.append(acc)
         f1_avg.append(f1)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self._cfg["results_path"] + "/D2_scores.out", "a") as output:
             output.write(f"#### FOLD {fold_num} ####\n")
             output.write("weighted average precision score: " + str(prec) + "\n")
             output.write("accuracy score: " + str(acc) + "\n")
