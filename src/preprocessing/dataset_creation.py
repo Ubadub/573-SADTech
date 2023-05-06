@@ -15,7 +15,7 @@ from typing import Any
 
 import datasets
 
-from config import CLASS_LABELS, CLASS_NAMES, GLOBAL_SEED, N_FOLDS
+from common import CLASS_LABELS, GLOBAL_SEED, N_FOLDS
 
 
 def process_raw_dataset(
@@ -36,10 +36,21 @@ def process_raw_dataset(
     return entry
 
 
+def add_audio(
+    entry: dict[str, Any],
+    path: str = ".",
+    ext: str = "mp3",
+) -> dict[str, Any]:
+    fname = f'{entry["file"]}.{ext}'
+    fpath = os.path.join(path, fname)
+    entry["audio"] = fpath
+    return entry
+
+
 def assemble_dataset(
     lang: str,
     class_labels: datasets.ClassLabel,
-    root_data_dir: str = "data/",
+    root_data_dir: str = "../data/",
     subdir: str = "text/",
     labels_file_name: str = "all.csv",
     delimiter: str = ",",
@@ -47,6 +58,7 @@ def assemble_dataset(
     ext = os.path.splitext(labels_file_name)[-1][1:]
     lang_dir = os.path.join(root_data_dir, lang)
     text_file_dir = os.path.join(lang_dir, subdir)
+    audio_file_dir = os.path.join(lang_dir, "audio/")
     labels_file = os.path.join(lang_dir, labels_file_name)
     raw_ds = datasets.load_dataset(ext, data_files=labels_file, delimiter=delimiter)
 
@@ -54,6 +66,12 @@ def assemble_dataset(
         process_raw_dataset,
         fn_kwargs={"path": text_file_dir, "class_labels": class_labels},
     ).cast_column("label", class_labels)
+
+    ds = ds.map(
+        add_audio,
+        fn_kwargs={"path": audio_file_dir},
+    ).cast_column("audio", datasets.Audio(sampling_rate=16000))
+
     return ds
 
 
@@ -69,7 +87,7 @@ def main():
 
     args = parser.parse_args()
     lang = args.lang
-    output_path = args.output or f"data/{lang}/train_dataset_dict"
+    output_path = args.output or f"../data/{lang}/train_dataset_dict"
     output_dir_path = os.path.dirname(output_path)
 
     if output_dir_path:
