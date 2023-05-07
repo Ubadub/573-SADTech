@@ -22,7 +22,7 @@ from spacy.lang.ta import Tamil
 from spacy.lang.ml import Malayalam
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import spmatrix
-from typing import *
+from typing import Optional, Union
 
 
 class Vectors:
