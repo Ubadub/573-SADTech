@@ -1,0 +1,25 @@
+TextTransformers:
+  - name: "indic_bert"
+    class: !!python/name:pipeline_transformers.vectorizers.TransformerLayerVectorizer
+    args: []
+    kwargs:
+      language_model: "ai4bharat/indic-bert"
+      layers_to_combine:
+        - -1
+        - -2
+        - -3
+        - -4
+AudioTransformers: []
+Resamplers:
+  - name: "smote"
+    class: !!python/name:imblearn.over_sampling.SMOTE
+    args: []
+    kwargs:
+      k_neighbors: 2
+      random_state: !!python/name:common.GLOBAL_SEED
+Classifier:
+   class: !!python/name:sklearn.linear_model.LogisticRegression
+   args: []
+   kwargs:
+     #class_weight: "balanced"
+     max_iter: 1000

@@ -1,0 +1,24 @@
+TextTransformers:
+  - name: "tfidf"
+    class: !!python/name:sklearn.feature_extraction.text.TfidfVectorizer
+    args: []
+    kwargs:
+      #token_pattern: (?u)\b\S\S+\b|\b\d+\b
+      ngram_range:
+        !!python/tuple
+          - 1
+          - 5
+Resamplers:
+  - name: "smote"
+    class: !!python/name:imblearn.over_sampling.SMOTE
+    args: []
+    kwargs:
+      k_neighbors: 2
+      random_state: !!python/name:common.GLOBAL_SEED
+AudioTransformers: []
+Classifier:
+   class: !!python/name:sklearn.linear_model.LogisticRegression
+   args: []
+   kwargs:
+     #class_weight: "balanced"
+     max_iter: 1000
