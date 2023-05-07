@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Base script for updating or creating the conda environments for use with this project.
+# Usage: env_install+update.sh [-p </environment/prefix/path> | -n <environment_name>] (<path/to/environment.yml>)
 
 # -e: immediately exit if any program errors while running the script
 # -u: prohibit undefined variables
