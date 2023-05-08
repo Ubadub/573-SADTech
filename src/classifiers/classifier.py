@@ -41,7 +41,7 @@ class Classifier(ABC):
         skfolds = StratifiedKFold(n_splits=kfolds)  # does not shuffle
         splits = skfolds.split(X=self.feature_vectors, y=self.gold_labels)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self.config["results_path"] + "/D3_scores.out", "a") as output:
             output.write("#### Lang: " + self.config["lang"] + " ####\n")
             if self.config["classifier"] == "nb":
                 output.write("#### Naive Bayes Evaluation Output ####\n")
@@ -71,7 +71,7 @@ class Classifier(ABC):
         acc_avg = sum(acc_avg) / len(acc_avg)
         f1_avg = sum(f1_avg) / len(f1_avg)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self.config["results_path"] + "/D3_scores.out", "a") as output:
             output.write(f"#### Pooled F1 Scores ####\n")
             output.write("weighted average precision score: " + str(prec_avg) + "\n")
             output.write("accuracy score: " + str(acc_avg) + "\n")
@@ -146,7 +146,7 @@ class Classifier(ABC):
         acc_avg.append(acc)
         f1_avg.append(f1)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self.config["results_path"] + "/D3_scores.out", "a") as output:
             output.write(f"#### FOLD {fold_num} ####\n")
             output.write("weighted average precision score: " + str(prec) + "\n")
             output.write("accuracy score: " + str(acc) + "\n")

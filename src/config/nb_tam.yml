@@ -1,5 +1,5 @@
 data_path: ../data/tam/train_dataset_dict
-output_path: ../outputs/D2/tam
+output_path: ../outputs/D3/tam
 results_path: ../results
 lang: tam
 remove_punc: True
