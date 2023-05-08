@@ -95,7 +95,7 @@ def crossfold(clf_or_saved_path: Union[str, BaseEstimator], ds: Dataset):
             clf.fit(X_train, y_train)
         else:
             in_path = os.path.join(clf_or_saved_path, f"{n}.pkl")
-            print("Loading model from:", in_path)
+            # print("Loading model from:", in_path)
             with open(in_path, "rb") as f:
                 clf = pickle.load(f)
 
@@ -108,7 +108,7 @@ def crossfold(clf_or_saved_path: Union[str, BaseEstimator], ds: Dataset):
         # print(f"y_true: {list(y_true)}")
         # print(f"y_pred: {list(y_pred)}")
 
-    # print(classification_report(y_true_pooled, y_pred_pooled))
+    print(classification_report(y_true_pooled, y_pred_pooled))
 
 
 def train(cfg_path: str, dataset_path: str, save_model_to: Optional[str] = None):

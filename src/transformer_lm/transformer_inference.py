@@ -20,7 +20,7 @@ from transformers import (
 
 from common import CLASS_LABELS, GLOBAL_SEED, N_FOLDS
 
-# BASE_MODEL_PATH = "outputs/D2/transformer_model/"
+# BASE_MODEL_PATH = "outputs/D3/transformer_model/"
 TOKENIZER_KWARGS = {"padding": True, "truncation": True, "max_length": 512}
 
 
@@ -40,7 +40,7 @@ def infer(
     if dataset_dict_path is None:
         dataset_dict_path = os.path.abspath(f"../data/{lang}/train_dataset_dict")
     if model_base_path is None:
-        model_base_path = os.path.abspath(f"../outputs/D2/{lang}/transformer_model")
+        model_base_path = os.path.abspath(f"../outputs/D3/{lang}/transformer_model")
 
     ds_dict = datasets.load_from_disk(dataset_dict_path)
     ds = ds_dict["train"]

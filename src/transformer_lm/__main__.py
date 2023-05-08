@@ -25,7 +25,6 @@ subparsers = parser.add_subparsers(**SUBPARSERS_CONFIG)
 inf_subparser = subparsers.add_parser(
     "infer", aliases=["i", "inf"], description="Do inference"
 )
-inf_subparser.set_defaults(func=infer)
 inf_subparser.add_argument(
     "-l",
     "--lang",
@@ -33,6 +32,8 @@ inf_subparser.add_argument(
     choices=["tam", "mal"],
     help="Language (tam for Tamil, mal for Malayalam)",
 )
+inf_subparser.set_defaults(func=infer)
+
 train_subparser = subparsers.add_parser(
     "train",
     aliases=["t", "tr", "train", "f", "finetune"],
