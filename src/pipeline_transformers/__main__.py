@@ -20,16 +20,6 @@ import yaml
 
 from common import GLOBAL_SEED
 
-# from transformer_lm.finetune_transformer import rebalance_ds
-
-# from sklearn.datasets import fetch_openml
-# from sklearn.pipeline import Pipeline
-# from sklearn.impute import SimpleImputer
-# from sklearn.preprocessing import OneHotEncoder
-# from sklearn.model_selection import train_test_split, RandomizedSearchCV
-# from sklearn.feature_selection import SelectPercentile, chi2
-
-
 np.random.seed(GLOBAL_SEED)
 
 CFG_CLASSIFIER_CACHE = "ClassifierCachePath"
@@ -42,16 +32,6 @@ CFG_NAME = "name"
 CFG_CLASS = "class"
 CFG_ARGS = "args"
 CFG_KWARGS = "kwargs"
-
-
-# TRANSFORMERS_STEP_NAME_CFG_FIELD = "step_name"
-# TRANSFORMERS_STEP_CLASS_CFG_FIELD = "step_class"
-# TRANSFORMERS_CONSTRUCTOR_ARGS_CFG_FIELD = "constructor_args"
-# TRANSFORMERS_CONSTRUCTOR_KWARGS_CFG_FIELD = "constructor_kwargs"
-#
-# CLASSIFIER_CFG_FIELD = "Classifier"
-# CLASSIFIER_CONSTRUCTOR_ARGS_CFG_FIELD = "ClassifierArguments"
-# CLASSIFIER_CONSTRUCTOR_KWARGS_CFG_FIELD = "ClassifierKeywordArguments"
 
 TEXT_COL = "text"
 AUDIO_COL = "audio"
@@ -95,9 +75,6 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-
-# clf = TransformerLayerVectorClassifier(config=config, lm_name_or_path="xlm-roberta-base", strategy="last4")
-# clf = TransformerLayerVectorClassifier(config=config, lm_name_or_path="xlm-roberta-large", strategy="last4")
 
 with open(args.config_path, "r") as ymlfile:
     cfg = yaml.unsafe_load(ymlfile)
@@ -198,24 +175,3 @@ for n, (train_idxs, eval_idxs) in enumerate(
     print(f"y_pred: {list(y_pred)}")
 
 print(classification_report(y_true_pooled, y_pred_pooled))
-
-
-# X, y = fetch_openml(
-#     "titanic", version=1, as_frame=True, return_X_y=True, parser="pandas"
-# )
-#
-# print(type(X), type(y))
-# print(X, y)
-#
-# numeric_features = ["age", "fare"]
-# numeric_transformer = Pipeline(
-#     steps=[("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())]
-# )
-#
-# categorical_features = ["embarked", "sex", "pclass"]
-# categorical_transformer = Pipeline(
-#     steps=[
-#         ("encoder", OneHotEncoder(handle_unknown="ignore")),
-#         ("selector", SelectPercentile(chi2, percentile=50)),
-#     ]
-# )
