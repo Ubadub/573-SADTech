@@ -136,3 +136,6 @@ dmypy.json
 
 # vscode
 .vscode/
+
+# sklearn cache
+sklearn_cache/
