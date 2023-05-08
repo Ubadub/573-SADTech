@@ -1,0 +1,18 @@
+TextTransformers:
+  - name: "xlm_roberta_base"
+    class: !!python/name:pipeline_transformers.vectorizers.TransformerLayerVectorizer
+    args: []
+    kwargs:
+      language_model: "xlm-roberta-base"
+      layers_to_combine:
+        - -1
+        - -2
+        - -3
+        - -4
+AudioTransformers: []
+Classifier:
+   class: !!python/name:sklearn.linear_model.LogisticRegression
+   args: []
+   kwargs:
+     #class_weight: "balanced"
+     max_iter: 1000

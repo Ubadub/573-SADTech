@@ -1,0 +1,18 @@
+TextTransformers:
+  - name: "xlm_roberta_base"
+    class: !!python/name:pipeline_transformers.vectorizers.TransformerLayerVectorizer
+    args: []
+    kwargs:
+      language_model: "xlm-roberta-base"
+      layers_to_combine:
+        - -1
+        - -2
+        - -3
+        - -4
+AudioTransformers: []
+Classifier:
+   class: !!python/name:sklearn.ensemble.RandomForestClassifier
+   args: []
+   kwargs:
+      random_state: !!python/name:common.GLOBAL_SEED
+      n_jobs: -1

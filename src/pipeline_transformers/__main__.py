@@ -192,7 +192,7 @@ def train(cfg_path: str, dataset_path: str, save_model_to: Optional[str] = None)
 def infer(dataset_path: str, saved_models_dir: str):
     ds_dict: DatasetDict = load_from_disk(dataset_path)
     ds: Dataset = ds_dict["train"]
-    for _ in crossfold(clf_or_path=saved_models_dir, ds=ds):
+    for _ in crossfold(clf_or_saved_path=saved_models_dir, ds=ds):
         pass
     # crossfold(clf_or_path=saved_models_dir, ds=ds, do_fit=True)
 
