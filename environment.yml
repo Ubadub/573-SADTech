@@ -3,6 +3,7 @@ channels:
   - fastai
   - conda-forge
   - defaults
+  # - pytorch
 dependencies:
   - python=3.9.*
   - pip=23.*
@@ -34,6 +35,7 @@ dependencies:
   - types-requests
   - types-setuptools
   - types-tabulate
+  # - torchaudio
   - pip:
     - types-pywin32
     - types-tqdm
