@@ -1,0 +1,9 @@
+defaults:
+  - pipeline: default_pipeline
+  - global_rng: default_rng
+  - _self_
+dataset: ???
+debug: False
+global_rng: ???
+n_splits: 4
+# mode: crossfold

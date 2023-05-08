@@ -1,0 +1,3 @@
+random_oversampler:
+  _target_: imblearn.over_sampling.RandomOverSampler
+  random_state: ${ref:global_rng}

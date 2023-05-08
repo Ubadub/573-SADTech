@@ -1,0 +1,5 @@
+smote:
+  _target_: imblearn.over_sampling.SMOTE
+  # _args_: []
+  random_state: ${ref:global_rng}
+  k_neighbors: 2

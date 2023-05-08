@@ -1,0 +1,6 @@
+# @package _global_
+hydra:
+  sweeper:
+    params:
+      pipeline.classifier: rf, logistic
+      seed: 100, 200, 420, 573

@@ -1,0 +1,2 @@
+pca:
+  _target_: sklearn.decomposition.PCA
