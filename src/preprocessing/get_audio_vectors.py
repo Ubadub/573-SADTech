@@ -1,12 +1,61 @@
 """
-Create audio vectors.
+Creates audio vectors.
 """
 
 import argparse
-
-from transformers import Wav2Vec2Processor, Wav2Vec2FeatureExtractor, PreTrainedTokenizer
+import numpy as np
 
 import datasets
+
+from transformers import Wav2Vec2FeatureExtractor, ClapFeatureExtractor
+
+
+def get_wav2vec2_features(audio_array: list[np.ndarray], file_names: list[str]) -> dict[str, np.ndarray]:
+    """
+    Params:
+        - audio_array: list of arrays representations of audio files
+        - file_names: list of file names in the current dataset
+
+    Creates wav2vec2 feature vectors for each audio array.
+    From: https://huggingface.co/docs/transformers/v4.28.1/en/model_doc/wav2vec2#transformers.Wav2Vec2FeatureExtractor
+
+    Returns:
+        - A dictionary that maps each audio file name to its feature vector.
+    """
+    feature_extractor = Wav2Vec2FeatureExtractor(sampling_rate=16000)
+    inputs = feature_extractor(audio_array,
+                               return_tensors="np",
+                               sampling_rate=16000,
+                               padding=True)["input_values"]
+
+    return get_vector_dict(inputs, file_names)
+
+def get_clap_features(audio_array: list[np.ndarray], file_names: list[str]) -> dict[str, np.ndarray]:
+    """
+    Params:
+        - audio_array: list of arrays representations of audio files
+        - file_names: list of file names in the current dataset
+
+    Creates mel-filter bank feature vectors for each audio array.
+    From: https://huggingface.co/docs/transformers/model_doc/clap#transformers.ClapFeatureExtractor
+
+    Returns:
+        - A dictionary that maps each audio file name to its feature vector.
+    """
+    feature_extractor = ClapFeatureExtractor(sampling_rate=16000)
+    inputs = feature_extractor(audio_array,
+                               return_tensors="np",
+                               sampling_rate=16000,
+                               padding=True)["input_features"]
+
+    return get_vector_dict(inputs, file_names)
+
+
+def get_vector_dict(inputs, file_names):
+    vectors = {}
+    for file_name, input in zip(file_names, inputs):
+        vectors[file_name] = input
+    return vectors
 
 
 def main():
@@ -26,13 +75,13 @@ def main():
 
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(f"../data/{lang}/train_dataset_dict")
 
-    feature_extractor = Wav2Vec2FeatureExtractor(ds_dict["train"]["audio"][0]["array"], return_tensors = "np")
-    tokenizer = PreTrainedTokenizer()
-    processor = Wav2Vec2Processor(feature_extractor, tokenizer)
-    print(ds_dict["train"]["audio"][0])
-    # print(feature_extractor."feature_size"[0]["array"])
-    print(feature_extractor.feature_size)
-    # processor.save_pretrained("test/")
+    audio_array = [audio_dict["array"] for audio_dict in ds_dict["train"]["audio"]]
+    file_names = ds_dict["train"]["file"]
+
+    # vectors = get_wav2vec2_features(audio_array, file_names)
+    # vectors = get_clap_features(audio_array, file_names)
+
+    # print(type(vectors))
 
 
 if __name__ == "__main__":
