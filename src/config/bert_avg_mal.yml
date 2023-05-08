@@ -9,4 +9,6 @@ remove_num: False
 vectors: bert_avg
 classifier: nb
 pretrained_model: "xlm-roberta-base"
-tfidf_weighted: False
+weights:
+  tfidf_weighted: True
+  tfidf_out_path: ../outputs/embeddings
