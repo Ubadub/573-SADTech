@@ -1,0 +1,14 @@
+###### Baseline ######
+#### Lang: tam ####
+#### Naive Bayes Evaluation Output ####
+#### Lang: mal ####
+#### Naive Bayes Evaluation Output ####
+###### Finetuned Transformers ######
+### TAMIL ###
+#### FOLD 0 ####
+### MALAYALAM ###
+#### FOLD 0 ####
+###### Last Four Layers of XLM Roberta ######
+#### SMOTE + Random Forest ####
+### TAMIL ###
+### MALAYALAM ###
