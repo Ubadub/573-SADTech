@@ -138,4 +138,9 @@ dmypy.json
 .vscode/
 
 # sklearn cache
-sklearn_cache/
+*sklearn_cache/
+
+# Binary/Saved Model/Pickle files
+*.bin
+*.model
+*.pkl
