@@ -8,9 +8,10 @@ import numpy as np
 
 import datasets
 
+from sklearn.base import BaseEstimator, TransformerMixin
 from transformers import Wav2Vec2FeatureExtractor, ClapFeatureExtractor#, MCTCTFeatureExtractor
 
-class AudioFeatureExtractor():
+class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
     """
     Constructor
 
