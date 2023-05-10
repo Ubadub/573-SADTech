@@ -16,20 +16,22 @@ class Classifier(ABC):
         feature_vector_wrapper = Vectors(config=config, ds_dict=ds_dict)
         self.feature_vectors = feature_vector_wrapper.get_vectors().toarray()
         self.gold_labels = np.array(ds_dict["train"]["label"])
-        self.model = self._choose_model()
+        self.model = self._name_classifier()
         self.ds = ds_dict["train"]
 
 
-    def _choose_model(self):
-        cl = self.config["classifier"]
-        if cl == "nb":
+    def _name_classifier(self):
+        class_abbrev = self.config["classifier"]
+        if class_abbrev == "nb":
             return "Naive Bayes"
-        elif cl == "lr":
+        elif class_abbrev == "lr":
             return "Logistic Regression"
-        elif cl == "rf":
+        elif class_abbrev == "sgd":
+            return "Stochastic Gradient Descent"
+        elif class_abbrev == "rf":
             return "Random Forest"
         else:
-            raise ValueError(f"Unrecognized classifier method; got {cl} instead.")
+            raise ValueError(f"Unrecognized classifier; got {class_abbrev} instead.")
 
 
     @abstractmethod
@@ -54,7 +56,7 @@ class Classifier(ABC):
         skfolds = StratifiedKFold(n_splits=kfolds)  # does not shuffle
         splits = skfolds.split(X=self.feature_vectors, y=self.gold_labels)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self.config["results_path"] + "/D3_scores.out", "a") as output:
             output.write("#### Lang: " + self.config["lang"] + " ####\n")
             output.write(f"#### {self.model} Evaluation Output ####\n")
 
@@ -79,7 +81,7 @@ class Classifier(ABC):
         acc_avg = sum(acc_avg) / len(acc_avg)
         f1_avg = sum(f1_avg) / len(f1_avg)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self.config["results_path"] + "/D3_scores.out", "a") as output:
             output.write(f"#### Pooled F1 Scores ####\n")
             output.write("weighted average precision score: " + str(prec_avg) + "\n")
             output.write("accuracy score: " + str(acc_avg) + "\n")
@@ -154,7 +156,7 @@ class Classifier(ABC):
         acc_avg.append(acc)
         f1_avg.append(f1)
 
-        with open(self.config["results_path"] + "/D2_scores.out", "a") as output:
+        with open(self.config["results_path"] + "/D3_scores.out", "a") as output:
             output.write(f"#### FOLD {fold_num} ####\n")
             output.write("weighted average precision score: " + str(prec) + "\n")
             output.write("accuracy score: " + str(acc) + "\n")
