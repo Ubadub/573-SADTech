@@ -12,7 +12,7 @@ Currently expects that the given directory has the following structure:
 import os
 from typing import Any, Optional
 
-from datasets import ClassLabel, DatasetDict, load_dataset
+from datasets import ClassLabel, DatasetDict, load_dataset, Audio
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
 # def process_raw_dataset(
@@ -80,6 +80,17 @@ def process_raw_dataset(
     return ds
 
 
+def add_audio(
+    entry: dict[str, Any],
+    path: str = ".",
+    ext: str = "mp3",
+) -> dict[str, Any]:
+    fname = f'{entry["file"]}.{ext}'
+    fpath = os.path.join(path, fname)
+    entry["audio"] = fpath
+    return entry
+
+
 def assemble_dataset(
     lang: str,
     class_labels: ClassLabel,
@@ -95,6 +106,9 @@ def assemble_dataset(
     text_file_dir = os.path.join(lang_dir, subdir)
     data_file = os.path.join(lang_dir, data_files_name)
     raw_ds = load_dataset(ext, data_files=data_file, delimiter=delimiter)
+    audio_file_dir = os.path.join(lang_dir, "audio/")
+    labels_file = os.path.join(lang_dir, data_files_name)
+    raw_ds = load_dataset(ext, data_files=labels_file, delimiter=delimiter)
 
     process_raw_dataset_kwargs["text_file_dir"] = text_file_dir
     process_raw_dataset_kwargs["class_labels"] = class_labels
@@ -105,4 +119,10 @@ def assemble_dataset(
         process_raw_dataset,
         fn_kwargs=process_raw_dataset_kwargs,
     ).cast_column("label", class_labels)
+
+    ds = ds.map(
+        add_audio,
+        fn_kwargs={"path": audio_file_dir},
+    ).cast_column("audio", Audio(sampling_rate=16000))
+
     return ds

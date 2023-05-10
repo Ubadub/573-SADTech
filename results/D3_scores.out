@@ -1,0 +1,269 @@
+###### Baseline ######
+#### Lang: tam ####
+#### Naive Bayes Evaluation Output ####
+#### FOLD 0 ####
+weighted average precision score: 0.41326530612244905
+accuracy score: 0.6428571428571429
+weighted average f1 score: 0.5031055900621119
+#### END FOLD 0 ####
+
+#### FOLD 1 ####
+weighted average precision score: 0.32653061224489793
+accuracy score: 0.5714285714285714
+weighted average f1 score: 0.4155844155844156
+#### END FOLD 1 ####
+
+#### FOLD 2 ####
+weighted average precision score: 0.37869822485207105
+accuracy score: 0.6153846153846154
+weighted average f1 score: 0.4688644688644689
+#### END FOLD 2 ####
+
+#### FOLD 3 ####
+weighted average precision score: 0.37869822485207105
+accuracy score: 0.6153846153846154
+weighted average f1 score: 0.4688644688644689
+#### END FOLD 3 ####
+
+#### Pooled F1 Scores ####
+weighted average precision score: 0.37429809201787234
+accuracy score: 0.6112637362637363
+weighted average f1 score: 0.46410473584386636
+#### END ####
+
+#### Lang: mal ####
+#### Naive Bayes Evaluation Output ####
+#### FOLD 0 ####
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
+#### END FOLD 0 ####
+
+#### FOLD 1 ####
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
+#### END FOLD 1 ####
+
+#### FOLD 2 ####
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
+#### END FOLD 2 ####
+
+#### FOLD 3 ####
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
+#### END FOLD 3 ####
+
+#### Pooled F1 Scores ####
+weighted average precision score: 0.36
+accuracy score: 0.6
+weighted average f1 score: 0.44999999999999996
+#### END ####
+
+###### Finetuned Transformers ######
+### TAMIL ###
+#### FOLD 0 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         1
+       NEGATIVE       0.00      0.00      0.00         1
+        NEUTRAL       0.00      0.00      0.00         2
+       POSITIVE       0.64      1.00      0.78         9
+HIGHLY POSITIVE       0.00      0.00      0.00         1
+
+       accuracy                           0.64        14
+      macro avg       0.13      0.20      0.16        14
+   weighted avg       0.41      0.64      0.50        14
+
+
+
+#### FOLD 1 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         1
+       NEGATIVE       0.00      0.00      0.00         1
+        NEUTRAL       0.00      0.00      0.00         2
+       POSITIVE       0.57      1.00      0.73         8
+HIGHLY POSITIVE       0.00      0.00      0.00         2
+
+       accuracy                           0.57        14
+      macro avg       0.11      0.20      0.15        14
+   weighted avg       0.33      0.57      0.42        14
+
+
+
+#### FOLD 2 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         1
+       NEGATIVE       0.00      0.00      0.00         1
+        NEUTRAL       0.00      0.00      0.00         1
+       POSITIVE       0.62      1.00      0.76         8
+HIGHLY POSITIVE       0.00      0.00      0.00         2
+
+       accuracy                           0.62        13
+      macro avg       0.12      0.20      0.15        13
+   weighted avg       0.38      0.62      0.47        13
+
+
+
+#### FOLD 3 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         1
+       NEGATIVE       0.00      0.00      0.00         1
+        NEUTRAL       0.00      0.00      0.00         1
+       POSITIVE       0.62      1.00      0.76         8
+HIGHLY POSITIVE       0.00      0.00      0.00         2
+
+       accuracy                           0.62        13
+      macro avg       0.12      0.20      0.15        13
+   weighted avg       0.38      0.62      0.47        13
+
+
+
+#### POOLED SCORES ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         4
+       NEGATIVE       0.00      0.00      0.00         4
+        NEUTRAL       0.00      0.00      0.00         6
+       POSITIVE       0.61      1.00      0.76        33
+HIGHLY POSITIVE       0.00      0.00      0.00         7
+
+       accuracy                           0.61        54
+      macro avg       0.12      0.20      0.15        54
+   weighted avg       0.37      0.61      0.46        54
+
+### MALAYALAM ###
+#### FOLD 0 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         0
+       NEGATIVE       0.00      0.00      0.00         2
+        NEUTRAL       0.00      0.00      0.00         2
+       POSITIVE       0.60      1.00      0.75         9
+HIGHLY POSITIVE       0.00      0.00      0.00         2
+
+      micro avg       0.60      0.60      0.60        15
+      macro avg       0.12      0.20      0.15        15
+   weighted avg       0.36      0.60      0.45        15
+
+
+
+#### FOLD 1 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         1
+       NEGATIVE       0.00      0.00      0.00         2
+        NEUTRAL       0.00      0.00      0.00         1
+       POSITIVE       0.60      1.00      0.75         9
+HIGHLY POSITIVE       0.00      0.00      0.00         2
+
+       accuracy                           0.60        15
+      macro avg       0.12      0.20      0.15        15
+   weighted avg       0.36      0.60      0.45        15
+
+
+
+#### FOLD 2 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         0
+       NEGATIVE       0.00      0.00      0.00         3
+        NEUTRAL       0.00      0.00      0.00         1
+       POSITIVE       0.60      1.00      0.75         9
+HIGHLY POSITIVE       0.00      0.00      0.00         2
+
+      micro avg       0.60      0.60      0.60        15
+      macro avg       0.12      0.20      0.15        15
+   weighted avg       0.36      0.60      0.45        15
+
+
+
+#### FOLD 3 ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         0
+       NEGATIVE       0.00      0.00      0.00         3
+        NEUTRAL       0.00      0.00      0.00         2
+       POSITIVE       0.60      1.00      0.75         9
+HIGHLY POSITIVE       0.00      0.00      0.00         1
+
+      micro avg       0.60      0.60      0.60        15
+      macro avg       0.12      0.20      0.15        15
+   weighted avg       0.36      0.60      0.45        15
+
+
+
+#### POOLED SCORES ####
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         1
+       NEGATIVE       0.00      0.00      0.00        10
+        NEUTRAL       0.00      0.00      0.00         6
+       POSITIVE       0.60      1.00      0.75        36
+HIGHLY POSITIVE       0.00      0.00      0.00         7
+
+       accuracy                           0.60        60
+      macro avg       0.12      0.20      0.15        60
+   weighted avg       0.36      0.60      0.45        60
+
+###### Last Four Layers of XLM Roberta ######
+#### Logistic Regression ####
+### TAMIL (SMOTE) ###
+              precision    recall  f1-score   support
+
+           0       0.18      0.50      0.27         4
+           1       0.09      0.25      0.13         4
+           2       0.33      0.33      0.33         6
+           3       0.64      0.21      0.32        33
+           4       0.20      0.43      0.27         7
+
+    accuracy                           0.28        54
+   macro avg       0.29      0.34      0.26        54
+weighted avg       0.47      0.28      0.30        54
+
+### MALAYALAM ###
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00         1
+           1       0.00      0.00      0.00        10
+           2       0.00      0.00      0.00         6
+           3       0.60      1.00      0.75        36
+           4       0.00      0.00      0.00         7
+
+    accuracy                           0.60        60
+   macro avg       0.12      0.20      0.15        60
+weighted avg       0.36      0.60      0.45        60
+
+#### Random Forest ####
+### TAMIL (SMOTE) ###
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00         4
+           1       0.00      0.00      0.00         4
+           2       0.00      0.00      0.00         6
+           3       0.60      0.91      0.72        33
+           4       0.50      0.14      0.22         7
+
+    accuracy                           0.57        54
+   macro avg       0.22      0.21      0.19        54
+weighted avg       0.43      0.57      0.47        54
+
+### MALAYALAM ###
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00         1
+           1       0.50      0.10      0.17        10
+           2       0.00      0.00      0.00         6
+           3       0.60      0.97      0.74        36
+           4       0.00      0.00      0.00         7
+
+    accuracy                           0.60        60
+   macro avg       0.22      0.21      0.18        60
+weighted avg       0.45      0.60      0.47        60
+

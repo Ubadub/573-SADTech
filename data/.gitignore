@@ -1,5 +1,4 @@
 */audio/*
 */text/*
 */video/*
-*/*dataset_dict/
-master_text_with_labels.csv
+*/*dataset_dict*/

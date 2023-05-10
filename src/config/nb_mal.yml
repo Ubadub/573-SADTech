@@ -1,5 +1,5 @@
 data_path: ../data/mal/train_dataset_dict
-output_path: ../outputs/D2/mal
+output_path: ../outputs/D3/mal
 results_path: ../results
 lang: mal
 remove_punc: True

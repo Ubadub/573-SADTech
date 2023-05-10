@@ -63,14 +63,26 @@ python -m transformer_lm infer -l mal >> $SCORES_FILE
 
 
 echo "###### Last Four Layers of XLM Roberta ######" >> $SCORES_FILE
-echo "#### SMOTE + Random Forest ####" >> $SCORES_FILE
-echo "Running XLM Roberta last four layers RF + SMOTE - TAMIL"
-echo "### TAMIL ###" >> $SCORES_FILE
-python -m pipeline_transformers -c config/pipeline/last4_xlm_roberta_rf.yml -d ../data/tam/train_dataset_dict
+echo "#### Logistic Regression ####" >> $SCORES_FILE
 
-echo "Running XLM Roberta last four layers RF + SMOTE - MALAYALAM"
+echo "Running XLM Roberta last four layers Logistic + SMOTE - TAMIL"
+echo "### TAMIL (SMOTE) ###" >> $SCORES_FILE
+python -m pipeline_transformers -d ../data/tam/train_dataset_dict infer -m ../outputs/D3/tam/xlm4layers_logistic >> $SCORES_FILE
+
+echo "Running XLM Roberta last four layers Logistic - MALAYALAM"
 echo "### MALAYALAM ###" >> $SCORES_FILE
-python -m pipeline_transformers -c config/pipeline/last4_xlm_roberta_rf.yml -d ../data/mal/train_dataset_dict
+python -m pipeline_transformers -d ../data/mal/train_dataset_dict infer -m ../outputs/D3/mal/xlm4layers_logistic >> $SCORES_FILE
+
+echo "#### Random Forest ####" >> $SCORES_FILE
+
+echo "Running XLM Roberta last four layers RF + SMOTE - TAMIL"
+echo "### TAMIL (SMOTE) ###" >> $SCORES_FILE
+python -m pipeline_transformers -d ../data/tam/train_dataset_dict infer -m ../outputs/D3/tam/xlm4layers_rf >> $SCORES_FILE
+
+echo "Running XLM Roberta last four layers RF - MALAYALAM"
+echo "### MALAYALAM ###" >> $SCORES_FILE
+python -m pipeline_transformers -d ../data/mal/train_dataset_dict infer -m ../outputs/D3/mal/xlm4layers_rf >> $SCORES_FILE
+
 
 # Go back to starting directory
 cd $owd
