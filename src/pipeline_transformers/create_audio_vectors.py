@@ -5,6 +5,7 @@ Creates audio vectors.
 from typing import Optional
 import argparse
 import numpy as np
+import pickle
 
 import datasets
 
@@ -23,20 +24,27 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             - mctct
     """
     def __init__(self, strategy: Optional[str]):
-        self._strat = strategy
+        self.strategy = strategy
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X, y=None):
-        if self._strat == "wav2vec2":
-            return self.get_wav2vec2_features(X)
-        elif self._strat == "clap":
-            return self.get_clap_features(X)
-        elif self._strat == "mctct":
-            return self.get_mctct_features(X)
+        print()
+        print(type(X[0]))
+        print(dict(X[0]).keys())
+        print(pickle.loads(X[0]["bytes"]))
+        print()
+        audio_array = [audio_dict["array"] for audio_dict in X]
+
+        if self.strategy == "wav2vec2":
+            return self.get_wav2vec2_features(audio_array)
+        elif self.strategy == "clap":
+            return self.get_clap_features(audio_array)
+        elif self.strategy == "mctct":
+            return self.get_mctct_features(audio_array)
         else:
-            return self.get_wav2vec2_features(X)
+            return self.get_wav2vec2_features(audio_array)
 
 
     @staticmethod
@@ -102,13 +110,14 @@ def main():
 
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(f"../data/{lang}/train_dataset_dict")
 
-    audio_array = [audio_dict["array"] for audio_dict in ds_dict["train"]["audio"]]
+    # audio_array = [audio_dict["array"] for audio_dict in ds_dict["train"]["audio"]]
+    # print(audio_array)
 
-    vectors = AudioFeatureExtractor.get_wav2vec2_features(audio_array)
+    # vectors = AudioFeatureExtractor.get_wav2vec2_features(audio_array)
     # vectors = get_clap_features(audio_array)
     # vectors = get_mctct_features(audio_array)
 
-    print(vectors)
+    # print(vectors)
 
 
 if __name__ == "__main__":

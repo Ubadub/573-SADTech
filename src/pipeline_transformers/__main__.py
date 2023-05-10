@@ -39,8 +39,8 @@ CFG_KWARGS = "kwargs"
 TEXT_COL = "text"
 AUDIO_COL = "audio"
 Y_COL = "label"
-# ALL_FEATS = [AUDIO_COL, TEXT_COL]
-ALL_FEATS = [TEXT_COL]
+ALL_FEATS = [AUDIO_COL, TEXT_COL]
+# ALL_FEATS = [TEXT_COL]
 
 PARSER_CONFIG = {
     # "prog": "python -m transformer_lm",
