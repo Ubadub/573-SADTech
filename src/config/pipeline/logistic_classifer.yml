@@ -1,0 +1,11 @@
+model: !!python/name:sklearn.linear_model.LogisticRegression
+ModelKeywordArguments:
+  class_weight: "balanced"
+  max_iter: 1000
+VectorizationArguments:
+VectorizationKeywordArguments:
+TokenizerArguments:
+TokenizerKeywordArguments:
+  return_tensors: pt
+  max_length: 512
+  truncation: True

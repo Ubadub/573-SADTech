@@ -1,7 +1,592 @@
-The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
-The tokenizer class you load from this checkpoint is 'Wav2Vec2CTCTokenizer'. 
-The class this function is called from is 'Wav2Vec2Tokenizer'.
-/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/transformers/models/wav2vec2/tokenization_wav2vec2.py:757: FutureWarning: The class `Wav2Vec2Tokenizer` is deprecated and will be removed in version 5 of Transformers. Please use `Wav2Vec2Processor` or `Wav2Vec2CTCTokenizer` instead.
+realpath: ‘../outputs/D3/tam/nb_output.txt’: No such file or directory
+realpath: ‘../outputs/D3/mal/nb_output.txt’: No such file or directory
+/home2/taraw28/573-SADTech/src/d3_run.sh: line 45: $MAL_NB_OUTPUT: ambiguous redirect
+/home2/taraw28/573-SADTech/src/d3_run.sh: line 46: $TAM_NB_OUTPUT: ambiguous redirect
+
+Map:   0%|          | 0/54 [00:00<?, ? examples/s]
+Map: 100%|██████████| 54/54 [00:00<00:00, 64.94 examples/s]
+
+Traceback (most recent call last):
+  File "/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/home2/taraw28/573-SADTech/src/classifiers/__main__.py", line 19, in <module>
+    classifier.kfold_validation()
+  File "/home2/taraw28/573-SADTech/src/classifiers/classifier.py", line 64, in kfold_validation
+    self.output_predicted_labels(gold_labels, predicted, eval_idxs, n)
+  File "/home2/taraw28/573-SADTech/src/classifiers/classifier.py", line 98, in output_predicted_labels
+    with open(self.config["output_path"] + "/nb_output.txt", "a") as output:
+FileNotFoundError: [Errno 2] No such file or directory: '../outputs/D3/tam/nb_output.txt'
+
+Map:   0%|          | 0/60 [00:00<?, ? examples/s]
+Map: 100%|██████████| 60/60 [00:00<00:00, 60.48 examples/s]
+
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/sklearn/model_selection/_split.py:700: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=4.
   warnings.warn(
-Some weights of Wav2Vec2ForCTC were not initialized from the model checkpoint at facebook/wav2vec2-base-960h and are newly initialized: ['wav2vec2.masked_spec_embed']
-You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+Traceback (most recent call last):
+  File "/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/home2/taraw28/573-SADTech/src/classifiers/__main__.py", line 19, in <module>
+    classifier.kfold_validation()
+  File "/home2/taraw28/573-SADTech/src/classifiers/classifier.py", line 64, in kfold_validation
+    self.output_predicted_labels(gold_labels, predicted, eval_idxs, n)
+  File "/home2/taraw28/573-SADTech/src/classifiers/classifier.py", line 98, in output_predicted_labels
+    with open(self.config["output_path"] + "/nb_output.txt", "a") as output:
+FileNotFoundError: [Errno 2] No such file or directory: '../outputs/D3/mal/nb_output.txt'
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py:197 in         │
+│ _run_module_as_main                                                          │
+│                                                                              │
+│   194 │   main_globals = sys.modules["__main__"].__dict__                    │
+│   195 │   if alter_argv:                                                     │
+│   196 │   │   sys.argv[0] = mod_spec.origin                                  │
+│ ❱ 197 │   return _run_code(code, main_globals, None,                         │
+│   198 │   │   │   │   │    "__main__", mod_spec)                             │
+│   199                                                                        │
+│   200 def run_module(mod_name, init_globals=None,                            │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py:87 in          │
+│ _run_code                                                                    │
+│                                                                              │
+│    84 │   │   │   │   │      __loader__ = loader,                            │
+│    85 │   │   │   │   │      __package__ = pkg_name,                         │
+│    86 │   │   │   │   │      __spec__ = mod_spec)                            │
+│ ❱  87 │   exec(code, run_globals)                                            │
+│    88 │   return run_globals                                                 │
+│    89                                                                        │
+│    90 def _run_module_code(code, init_globals=None,                          │
+│                                                                              │
+│ /home2/taraw28/573-SADTech/src/transformer_lm/__main__.py:56 in <module>     │
+│                                                                              │
+│   53 func_kwargs = dict(vars(args))                                          │
+│   54 del func_kwargs["func"]                                                 │
+│   55                                                                         │
+│ ❱ 56 args.func(**func_kwargs)                                                │
+│   57                                                                         │
+│                                                                              │
+│ /home2/taraw28/573-SADTech/src/transformer_lm/transformer_inference.py:56 in │
+│ infer                                                                        │
+│                                                                              │
+│   53 │   │   print(f"#### FOLD {n} ####")                                    │
+│   54 │   │   eval_ds = ds.select(eval_idxs)                                  │
+│   55 │   │   fold_model_path = os.path.abspath(os.path.join(model_base_path, │
+│ ❱ 56 │   │   tokenizer = AutoTokenizer.from_pretrained(fold_model_path)      │
+│   57 │   │   pipe = pipeline(                                                │
+│   58 │   │   │   task="sentiment-analysis",                                  │
+│   59 │   │   │   model=fold_model_path,                                      │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/transform │
+│ ers/models/auto/tokenization_auto.py:642 in from_pretrained                  │
+│                                                                              │
+│   639 │   │   │   return tokenizer_class.from_pretrained(pretrained_model_na │
+│   640 │   │                                                                  │
+│   641 │   │   # Next, let's try to use the tokenizer_config file to get the  │
+│ ❱ 642 │   │   tokenizer_config = get_tokenizer_config(pretrained_model_name_ │
+│   643 │   │   if "_commit_hash" in tokenizer_config:                         │
+│   644 │   │   │   kwargs["_commit_hash"] = tokenizer_config["_commit_hash"]  │
+│   645 │   │   config_tokenizer_class = tokenizer_config.get("tokenizer_class │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/transform │
+│ ers/models/auto/tokenization_auto.py:486 in get_tokenizer_config             │
+│                                                                              │
+│   483 │   tokenizer_config = get_tokenizer_config("tokenizer-test")          │
+│   484 │   ```"""                                                             │
+│   485 │   commit_hash = kwargs.get("_commit_hash", None)                     │
+│ ❱ 486 │   resolved_config_file = cached_file(                                │
+│   487 │   │   pretrained_model_name_or_path,                                 │
+│   488 │   │   TOKENIZER_CONFIG_FILE,                                         │
+│   489 │   │   cache_dir=cache_dir,                                           │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/transform │
+│ ers/utils/hub.py:409 in cached_file                                          │
+│                                                                              │
+│    406 │   user_agent = http_user_agent(user_agent)                          │
+│    407 │   try:                                                              │
+│    408 │   │   # Load from URL or cache if already cached                    │
+│ ❱  409 │   │   resolved_file = hf_hub_download(                              │
+│    410 │   │   │   path_or_repo_id,                                          │
+│    411 │   │   │   filename,                                                 │
+│    412 │   │   │   subfolder=None if len(subfolder) == 0 else subfolder,     │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/huggingfa │
+│ ce_hub/utils/_validators.py:112 in _inner_fn                                 │
+│                                                                              │
+│   109 │   │   │   kwargs.items(),  # Kwargs values                           │
+│   110 │   │   ):                                                             │
+│   111 │   │   │   if arg_name in ["repo_id", "from_id", "to_id"]:            │
+│ ❱ 112 │   │   │   │   validate_repo_id(arg_value)                            │
+│   113 │   │   │                                                              │
+│   114 │   │   │   elif arg_name == "token" and arg_value is not None:        │
+│   115 │   │   │   │   has_token = True                                       │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/huggingfa │
+│ ce_hub/utils/_validators.py:160 in validate_repo_id                          │
+│                                                                              │
+│   157 │   │   raise HFValidationError(f"Repo id must be a string, not {type( │
+│   158 │                                                                      │
+│   159 │   if repo_id.count("/") > 1:                                         │
+│ ❱ 160 │   │   raise HFValidationError(                                       │
+│   161 │   │   │   "Repo id must be in the form 'repo_name' or 'namespace/rep │
+│   162 │   │   │   f" '{repo_id}'. Use `repo_type` argument if needed."       │
+│   163 │   │   )                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+HFValidationError: Repo id must be in the form 'repo_name' or
+'namespace/repo_name':
+'/home2/taraw28/573-SADTech/outputs/D2/tam/transformer_model/fold_0'. Use
+`repo_type` argument if needed.
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/sklearn/model_selection/_split.py:700: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=4.
+  warnings.warn(
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py:197 in         │
+│ _run_module_as_main                                                          │
+│                                                                              │
+│   194 │   main_globals = sys.modules["__main__"].__dict__                    │
+│   195 │   if alter_argv:                                                     │
+│   196 │   │   sys.argv[0] = mod_spec.origin                                  │
+│ ❱ 197 │   return _run_code(code, main_globals, None,                         │
+│   198 │   │   │   │   │    "__main__", mod_spec)                             │
+│   199                                                                        │
+│   200 def run_module(mod_name, init_globals=None,                            │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py:87 in          │
+│ _run_code                                                                    │
+│                                                                              │
+│    84 │   │   │   │   │      __loader__ = loader,                            │
+│    85 │   │   │   │   │      __package__ = pkg_name,                         │
+│    86 │   │   │   │   │      __spec__ = mod_spec)                            │
+│ ❱  87 │   exec(code, run_globals)                                            │
+│    88 │   return run_globals                                                 │
+│    89                                                                        │
+│    90 def _run_module_code(code, init_globals=None,                          │
+│                                                                              │
+│ /home2/taraw28/573-SADTech/src/transformer_lm/__main__.py:56 in <module>     │
+│                                                                              │
+│   53 func_kwargs = dict(vars(args))                                          │
+│   54 del func_kwargs["func"]                                                 │
+│   55                                                                         │
+│ ❱ 56 args.func(**func_kwargs)                                                │
+│   57                                                                         │
+│                                                                              │
+│ /home2/taraw28/573-SADTech/src/transformer_lm/transformer_inference.py:56 in │
+│ infer                                                                        │
+│                                                                              │
+│   53 │   │   print(f"#### FOLD {n} ####")                                    │
+│   54 │   │   eval_ds = ds.select(eval_idxs)                                  │
+│   55 │   │   fold_model_path = os.path.abspath(os.path.join(model_base_path, │
+│ ❱ 56 │   │   tokenizer = AutoTokenizer.from_pretrained(fold_model_path)      │
+│   57 │   │   pipe = pipeline(                                                │
+│   58 │   │   │   task="sentiment-analysis",                                  │
+│   59 │   │   │   model=fold_model_path,                                      │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/transform │
+│ ers/models/auto/tokenization_auto.py:642 in from_pretrained                  │
+│                                                                              │
+│   639 │   │   │   return tokenizer_class.from_pretrained(pretrained_model_na │
+│   640 │   │                                                                  │
+│   641 │   │   # Next, let's try to use the tokenizer_config file to get the  │
+│ ❱ 642 │   │   tokenizer_config = get_tokenizer_config(pretrained_model_name_ │
+│   643 │   │   if "_commit_hash" in tokenizer_config:                         │
+│   644 │   │   │   kwargs["_commit_hash"] = tokenizer_config["_commit_hash"]  │
+│   645 │   │   config_tokenizer_class = tokenizer_config.get("tokenizer_class │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/transform │
+│ ers/models/auto/tokenization_auto.py:486 in get_tokenizer_config             │
+│                                                                              │
+│   483 │   tokenizer_config = get_tokenizer_config("tokenizer-test")          │
+│   484 │   ```"""                                                             │
+│   485 │   commit_hash = kwargs.get("_commit_hash", None)                     │
+│ ❱ 486 │   resolved_config_file = cached_file(                                │
+│   487 │   │   pretrained_model_name_or_path,                                 │
+│   488 │   │   TOKENIZER_CONFIG_FILE,                                         │
+│   489 │   │   cache_dir=cache_dir,                                           │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/transform │
+│ ers/utils/hub.py:409 in cached_file                                          │
+│                                                                              │
+│    406 │   user_agent = http_user_agent(user_agent)                          │
+│    407 │   try:                                                              │
+│    408 │   │   # Load from URL or cache if already cached                    │
+│ ❱  409 │   │   resolved_file = hf_hub_download(                              │
+│    410 │   │   │   path_or_repo_id,                                          │
+│    411 │   │   │   filename,                                                 │
+│    412 │   │   │   subfolder=None if len(subfolder) == 0 else subfolder,     │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/huggingfa │
+│ ce_hub/utils/_validators.py:112 in _inner_fn                                 │
+│                                                                              │
+│   109 │   │   │   kwargs.items(),  # Kwargs values                           │
+│   110 │   │   ):                                                             │
+│   111 │   │   │   if arg_name in ["repo_id", "from_id", "to_id"]:            │
+│ ❱ 112 │   │   │   │   validate_repo_id(arg_value)                            │
+│   113 │   │   │                                                              │
+│   114 │   │   │   elif arg_name == "token" and arg_value is not None:        │
+│   115 │   │   │   │   has_token = True                                       │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/huggingfa │
+│ ce_hub/utils/_validators.py:160 in validate_repo_id                          │
+│                                                                              │
+│   157 │   │   raise HFValidationError(f"Repo id must be a string, not {type( │
+│   158 │                                                                      │
+│   159 │   if repo_id.count("/") > 1:                                         │
+│ ❱ 160 │   │   raise HFValidationError(                                       │
+│   161 │   │   │   "Repo id must be in the form 'repo_name' or 'namespace/rep │
+│   162 │   │   │   f" '{repo_id}'. Use `repo_type` argument if needed."       │
+│   163 │   │   )                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+HFValidationError: Repo id must be in the form 'repo_name' or
+'namespace/repo_name':
+'/home2/taraw28/573-SADTech/outputs/D2/mal/transformer_model/fold_0'. Use
+`repo_type` argument if needed.
+
+Downloading (…)lve/main/config.json:   0%|          | 0.00/615 [00:00<?, ?B/s]
+Downloading (…)lve/main/config.json: 100%|██████████| 615/615 [00:00<00:00, 85.6kB/s]
+
+Downloading pytorch_model.bin:   0%|          | 0.00/1.12G [00:00<?, ?B/s]
+Downloading pytorch_model.bin:   1%|          | 10.5M/1.12G [00:00<00:25, 44.2MB/s]
+Downloading pytorch_model.bin:   2%|▏         | 21.0M/1.12G [00:00<00:22, 47.7MB/s]
+Downloading pytorch_model.bin:   3%|▎         | 31.5M/1.12G [00:00<00:21, 50.0MB/s]
+Downloading pytorch_model.bin:   4%|▍         | 41.9M/1.12G [00:00<00:20, 52.0MB/s]
+Downloading pytorch_model.bin:   5%|▍         | 52.4M/1.12G [00:01<00:19, 54.1MB/s]
+Downloading pytorch_model.bin:   6%|▌         | 62.9M/1.12G [00:01<00:18, 56.0MB/s]
+Downloading pytorch_model.bin:   7%|▋         | 73.4M/1.12G [00:01<00:18, 56.5MB/s]
+Downloading pytorch_model.bin:   8%|▊         | 83.9M/1.12G [00:01<00:18, 55.5MB/s]
+Downloading pytorch_model.bin:   8%|▊         | 94.4M/1.12G [00:01<00:18, 54.8MB/s]
+Downloading pytorch_model.bin:   9%|▉         | 105M/1.12G [00:02<00:19, 50.5MB/s]
+Downloading pytorch_model.bin:  10%|█         | 115M/1.12G [00:02<00:19, 51.3MB/s]
+Downloading pytorch_model.bin:  11%|█▏        | 126M/1.12G [00:02<00:18, 52.3MB/s]
+Downloading pytorch_model.bin:  12%|█▏        | 136M/1.12G [00:02<00:17, 54.7MB/s]
+Downloading pytorch_model.bin:  13%|█▎        | 147M/1.12G [00:02<00:19, 49.9MB/s]
+Downloading pytorch_model.bin:  14%|█▍        | 157M/1.12G [00:03<00:18, 51.9MB/s]
+Downloading pytorch_model.bin:  15%|█▌        | 168M/1.12G [00:03<00:18, 51.4MB/s]
+Downloading pytorch_model.bin:  16%|█▌        | 178M/1.12G [00:03<00:17, 54.4MB/s]
+Downloading pytorch_model.bin:  17%|█▋        | 189M/1.12G [00:03<00:16, 55.1MB/s]
+Downloading pytorch_model.bin:  18%|█▊        | 199M/1.12G [00:03<00:17, 52.0MB/s]
+Downloading pytorch_model.bin:  19%|█▉        | 210M/1.12G [00:03<00:17, 52.0MB/s]
+Downloading pytorch_model.bin:  20%|█▉        | 220M/1.12G [00:04<00:17, 51.2MB/s]
+Downloading pytorch_model.bin:  21%|██        | 231M/1.12G [00:04<00:16, 52.3MB/s]
+Downloading pytorch_model.bin:  22%|██▏       | 241M/1.12G [00:04<00:15, 54.9MB/s]
+Downloading pytorch_model.bin:  23%|██▎       | 252M/1.12G [00:04<00:15, 56.2MB/s]
+Downloading pytorch_model.bin:  23%|██▎       | 262M/1.12G [00:04<00:16, 51.2MB/s]
+Downloading pytorch_model.bin:  24%|██▍       | 273M/1.12G [00:05<00:16, 52.7MB/s]
+Downloading pytorch_model.bin:  25%|██▌       | 283M/1.12G [00:05<00:17, 48.4MB/s]
+Downloading pytorch_model.bin:  26%|██▋       | 294M/1.12G [00:05<00:16, 49.1MB/s]
+Downloading pytorch_model.bin:  27%|██▋       | 304M/1.12G [00:05<00:17, 47.0MB/s]
+Downloading pytorch_model.bin:  28%|██▊       | 315M/1.12G [00:06<00:16, 49.5MB/s]
+Downloading pytorch_model.bin:  29%|██▉       | 325M/1.12G [00:06<00:15, 49.7MB/s]
+Downloading pytorch_model.bin:  30%|███       | 336M/1.12G [00:06<00:15, 50.5MB/s]
+Downloading pytorch_model.bin:  31%|███       | 346M/1.12G [00:06<00:14, 53.6MB/s]
+Downloading pytorch_model.bin:  32%|███▏      | 357M/1.12G [00:06<00:14, 53.8MB/s]
+Downloading pytorch_model.bin:  33%|███▎      | 367M/1.12G [00:07<00:14, 51.8MB/s]
+Downloading pytorch_model.bin:  34%|███▍      | 377M/1.12G [00:07<00:13, 56.5MB/s]
+Downloading pytorch_model.bin:  35%|███▍      | 388M/1.12G [00:07<00:12, 59.8MB/s]
+Downloading pytorch_model.bin:  36%|███▌      | 398M/1.12G [00:07<00:11, 60.7MB/s]
+Downloading pytorch_model.bin:  37%|███▋      | 409M/1.12G [00:07<00:11, 59.1MB/s]
+Downloading pytorch_model.bin:  38%|███▊      | 419M/1.12G [00:07<00:11, 60.5MB/s]
+Downloading pytorch_model.bin:  39%|███▊      | 430M/1.12G [00:08<00:12, 53.0MB/s]
+Downloading pytorch_model.bin:  39%|███▉      | 440M/1.12G [00:08<00:14, 48.2MB/s]
+Downloading pytorch_model.bin:  40%|████      | 451M/1.12G [00:08<00:12, 52.3MB/s]
+Downloading pytorch_model.bin:  41%|████▏     | 461M/1.12G [00:08<00:11, 57.5MB/s]
+Downloading pytorch_model.bin:  42%|████▏     | 472M/1.12G [00:08<00:12, 53.6MB/s]
+Downloading pytorch_model.bin:  43%|████▎     | 482M/1.12G [00:09<00:11, 52.8MB/s]
+Downloading pytorch_model.bin:  44%|████▍     | 493M/1.12G [00:09<00:11, 56.1MB/s]
+Downloading pytorch_model.bin:  45%|████▌     | 503M/1.12G [00:09<00:10, 58.8MB/s]
+Downloading pytorch_model.bin:  46%|████▌     | 514M/1.12G [00:09<00:10, 59.7MB/s]
+Downloading pytorch_model.bin:  47%|████▋     | 524M/1.12G [00:09<00:09, 59.8MB/s]
+Downloading pytorch_model.bin:  48%|████▊     | 535M/1.12G [00:10<00:10, 54.7MB/s]
+Downloading pytorch_model.bin:  49%|████▉     | 545M/1.12G [00:10<00:12, 44.0MB/s]
+Downloading pytorch_model.bin:  50%|████▉     | 556M/1.12G [00:10<00:14, 38.0MB/s]
+Downloading pytorch_model.bin:  51%|█████     | 566M/1.12G [00:10<00:13, 39.8MB/s]
+Downloading pytorch_model.bin:  52%|█████▏    | 577M/1.12G [00:11<00:14, 37.9MB/s]
+Downloading pytorch_model.bin:  53%|█████▎    | 587M/1.12G [00:11<00:12, 42.2MB/s]
+Downloading pytorch_model.bin:  54%|█████▎    | 598M/1.12G [00:11<00:11, 46.3MB/s]
+Downloading pytorch_model.bin:  55%|█████▍    | 608M/1.12G [00:11<00:10, 50.0MB/s]
+Downloading pytorch_model.bin:  55%|█████▌    | 619M/1.12G [00:12<00:10, 49.7MB/s]
+Downloading pytorch_model.bin:  56%|█████▋    | 629M/1.12G [00:12<00:09, 49.2MB/s]
+Downloading pytorch_model.bin:  57%|█████▋    | 640M/1.12G [00:12<00:09, 49.3MB/s]
+Downloading pytorch_model.bin:  58%|█████▊    | 650M/1.12G [00:12<00:09, 50.5MB/s]
+Downloading pytorch_model.bin:  59%|█████▉    | 661M/1.12G [00:12<00:08, 51.5MB/s]
+Downloading pytorch_model.bin:  60%|██████    | 671M/1.12G [00:13<00:08, 53.4MB/s]
+Downloading pytorch_model.bin:  61%|██████    | 682M/1.12G [00:13<00:07, 56.9MB/s]
+Downloading pytorch_model.bin:  62%|██████▏   | 692M/1.12G [00:13<00:08, 51.6MB/s]
+Downloading pytorch_model.bin:  63%|██████▎   | 703M/1.12G [00:13<00:07, 53.1MB/s]
+Downloading pytorch_model.bin:  64%|██████▍   | 713M/1.12G [00:13<00:07, 56.8MB/s]
+Downloading pytorch_model.bin:  65%|██████▍   | 724M/1.12G [00:13<00:06, 58.5MB/s]
+Downloading pytorch_model.bin:  66%|██████▌   | 734M/1.12G [00:14<00:06, 56.1MB/s]
+Downloading pytorch_model.bin:  67%|██████▋   | 744M/1.12G [00:14<00:06, 55.5MB/s]
+Downloading pytorch_model.bin:  68%|██████▊   | 755M/1.12G [00:14<00:06, 54.5MB/s]
+Downloading pytorch_model.bin:  69%|██████▊   | 765M/1.12G [00:14<00:06, 54.1MB/s]
+Downloading pytorch_model.bin:  70%|██████▉   | 776M/1.12G [00:14<00:06, 50.9MB/s]
+Downloading pytorch_model.bin:  70%|███████   | 786M/1.12G [00:15<00:06, 54.0MB/s]
+Downloading pytorch_model.bin:  71%|███████▏  | 797M/1.12G [00:15<00:05, 57.0MB/s]
+Downloading pytorch_model.bin:  72%|███████▏  | 807M/1.12G [00:15<00:05, 56.5MB/s]
+Downloading pytorch_model.bin:  73%|███████▎  | 818M/1.12G [00:15<00:05, 55.0MB/s]
+Downloading pytorch_model.bin:  74%|███████▍  | 828M/1.12G [00:15<00:04, 59.3MB/s]
+Downloading pytorch_model.bin:  75%|███████▌  | 839M/1.12G [00:16<00:04, 57.9MB/s]
+Downloading pytorch_model.bin:  76%|███████▌  | 849M/1.12G [00:16<00:04, 56.7MB/s]
+Downloading pytorch_model.bin:  77%|███████▋  | 860M/1.12G [00:16<00:04, 58.1MB/s]
+Downloading pytorch_model.bin:  78%|███████▊  | 870M/1.12G [00:16<00:04, 56.5MB/s]
+Downloading pytorch_model.bin:  79%|███████▉  | 881M/1.12G [00:16<00:04, 56.6MB/s]
+Downloading pytorch_model.bin:  80%|███████▉  | 891M/1.12G [00:16<00:04, 53.7MB/s]
+Downloading pytorch_model.bin:  81%|████████  | 902M/1.12G [00:17<00:03, 55.6MB/s]
+Downloading pytorch_model.bin:  82%|████████▏ | 912M/1.12G [00:17<00:03, 55.3MB/s]
+Downloading pytorch_model.bin:  83%|████████▎ | 923M/1.12G [00:17<00:03, 57.7MB/s]
+Downloading pytorch_model.bin:  84%|████████▎ | 933M/1.12G [00:17<00:03, 59.6MB/s]
+Downloading pytorch_model.bin:  85%|████████▍ | 944M/1.12G [00:17<00:02, 60.1MB/s]
+Downloading pytorch_model.bin:  86%|████████▌ | 954M/1.12G [00:18<00:02, 57.4MB/s]
+Downloading pytorch_model.bin:  86%|████████▋ | 965M/1.12G [00:18<00:02, 60.0MB/s]
+Downloading pytorch_model.bin:  87%|████████▋ | 975M/1.12G [00:18<00:02, 58.7MB/s]
+Downloading pytorch_model.bin:  88%|████████▊ | 986M/1.12G [00:18<00:02, 59.9MB/s]
+Downloading pytorch_model.bin:  89%|████████▉ | 996M/1.12G [00:18<00:02, 51.9MB/s]
+Downloading pytorch_model.bin:  90%|█████████ | 1.01G/1.12G [00:18<00:02, 52.8MB/s]
+Downloading pytorch_model.bin:  91%|█████████ | 1.02G/1.12G [00:19<00:01, 55.4MB/s]
+Downloading pytorch_model.bin:  92%|█████████▏| 1.03G/1.12G [00:19<00:01, 57.7MB/s]
+Downloading pytorch_model.bin:  93%|█████████▎| 1.04G/1.12G [00:19<00:01, 56.2MB/s]
+Downloading pytorch_model.bin:  94%|█████████▍| 1.05G/1.12G [00:19<00:01, 56.9MB/s]
+Downloading pytorch_model.bin:  95%|█████████▍| 1.06G/1.12G [00:19<00:01, 55.7MB/s]
+Downloading pytorch_model.bin:  96%|█████████▌| 1.07G/1.12G [00:20<00:00, 52.8MB/s]
+Downloading pytorch_model.bin:  97%|█████████▋| 1.08G/1.12G [00:20<00:00, 54.3MB/s]
+Downloading pytorch_model.bin:  98%|█████████▊| 1.09G/1.12G [00:20<00:00, 54.6MB/s]
+Downloading pytorch_model.bin:  99%|█████████▊| 1.10G/1.12G [00:20<00:00, 55.5MB/s]
+Downloading pytorch_model.bin: 100%|█████████▉| 1.11G/1.12G [00:20<00:00, 54.1MB/s]
+Downloading pytorch_model.bin: 100%|██████████| 1.12G/1.12G [00:20<00:00, 53.1MB/s]
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+
+Downloading (…)tencepiece.bpe.model:   0%|          | 0.00/5.07M [00:00<?, ?B/s]
+Downloading (…)tencepiece.bpe.model: 100%|██████████| 5.07M/5.07M [00:00<00:00, 12.9MB/s]
+Downloading (…)tencepiece.bpe.model: 100%|██████████| 5.07M/5.07M [00:00<00:00, 12.7MB/s]
+
+Downloading (…)/main/tokenizer.json:   0%|          | 0.00/9.10M [00:00<?, ?B/s]
+Downloading (…)/main/tokenizer.json: 100%|██████████| 9.10M/9.10M [00:00<00:00, 18.5MB/s]
+Downloading (…)/main/tokenizer.json: 100%|██████████| 9.10M/9.10M [00:00<00:00, 18.1MB/s]
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/pipeline.py:240: UserWarning: Persisting input arguments took 5.05s to run.
+If this happens often in your code, it can cause performance problems
+(results will be correct in all cases).
+The reason for this is probably some large input arguments for a wrapped
+ function (e.g. large strings).
+THIS IS A JOBLIB ISSUE. If you can, kindly provide the joblib's team with an
+ example so that they can fix the problem.
+  X, fitted_transformer = fit_transform_one_cached(
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/pipeline.py:240: UserWarning: Persisting input arguments took 5.30s to run.
+If this happens often in your code, it can cause performance problems
+(results will be correct in all cases).
+The reason for this is probably some large input arguments for a wrapped
+ function (e.g. large strings).
+THIS IS A JOBLIB ISSUE. If you can, kindly provide the joblib's team with an
+ example so that they can fix the problem.
+  X, fitted_transformer = fit_transform_one_cached(
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/pipeline.py:240: UserWarning: Persisting input arguments took 5.64s to run.
+If this happens often in your code, it can cause performance problems
+(results will be correct in all cases).
+The reason for this is probably some large input arguments for a wrapped
+ function (e.g. large strings).
+THIS IS A JOBLIB ISSUE. If you can, kindly provide the joblib's team with an
+ example so that they can fix the problem.
+  X, fitted_transformer = fit_transform_one_cached(
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.bias', 'lm_head.dense.weight', 'lm_head.bias', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.decoder.weight']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/pipeline.py:240: UserWarning: Persisting input arguments took 5.03s to run.
+If this happens often in your code, it can cause performance problems
+(results will be correct in all cases).
+The reason for this is probably some large input arguments for a wrapped
+ function (e.g. large strings).
+THIS IS A JOBLIB ISSUE. If you can, kindly provide the joblib's team with an
+ example so that they can fix the problem.
+  X, fitted_transformer = fit_transform_one_cached(
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.weight', 'lm_head.dense.weight', 'lm_head.layer_norm.bias', 'lm_head.decoder.weight', 'lm_head.dense.bias', 'lm_head.bias']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/sklearn/model_selection/_split.py:700: UserWarning: The least populated class in y has only 1 members, which is less than n_splits=4.
+  warnings.warn(
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.weight', 'lm_head.dense.weight', 'lm_head.layer_norm.bias', 'lm_head.decoder.weight', 'lm_head.dense.bias', 'lm_head.bias']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of the model checkpoint at xlm-roberta-base were not used when initializing XLMRobertaModel: ['lm_head.layer_norm.weight', 'lm_head.dense.weight', 'lm_head.layer_norm.bias', 'lm_head.decoder.weight', 'lm_head.dense.bias', 'lm_head.bias']
+- This IS expected if you are initializing XLMRobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing XLMRobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+/home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/pipeline.py:240: UserWarning: Persisting input arguments took 5.21s to run.
+If this happens often in your code, it can cause performance problems
+(results will be correct in all cases).
+The reason for this is probably some large input arguments for a wrapped
+ function (e.g. large strings).
+THIS IS A JOBLIB ISSUE. If you can, kindly provide the joblib's team with an
+ example so that they can fix the problem.
+  X, fitted_transformer = fit_transform_one_cached(
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py:197 in         │
+│ _run_module_as_main                                                          │
+│                                                                              │
+│   194 │   main_globals = sys.modules["__main__"].__dict__                    │
+│   195 │   if alter_argv:                                                     │
+│   196 │   │   sys.argv[0] = mod_spec.origin                                  │
+│ ❱ 197 │   return _run_code(code, main_globals, None,                         │
+│   198 │   │   │   │   │    "__main__", mod_spec)                             │
+│   199                                                                        │
+│   200 def run_module(mod_name, init_globals=None,                            │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/runpy.py:87 in          │
+│ _run_code                                                                    │
+│                                                                              │
+│    84 │   │   │   │   │      __loader__ = loader,                            │
+│    85 │   │   │   │   │      __package__ = pkg_name,                         │
+│    86 │   │   │   │   │      __spec__ = mod_spec)                            │
+│ ❱  87 │   exec(code, run_globals)                                            │
+│    88 │   return run_globals                                                 │
+│    89                                                                        │
+│    90 def _run_module_code(code, init_globals=None,                          │
+│                                                                              │
+│ /home2/taraw28/573-SADTech/src/pipeline_transformers/__main__.py:169 in      │
+│ <module>                                                                     │
+│                                                                              │
+│   166 │   X_eval, y_true = eval_df[ALL_FEATS], eval_df[Y_COL].to_numpy()     │
+│   167 │                                                                      │
+│   168 │   # clf.fit(train_ds, y_train)                                       │
+│ ❱ 169 │   clf.fit(X_train, y_train)                                          │
+│   170 │   y_pred = clf.predict(X_eval)                                       │
+│   171 │                                                                      │
+│   172 │   y_true_pooled.extend(y_true)                                       │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/ │
+│ pipeline.py:293 in fit                                                       │
+│                                                                              │
+│   290 │   │   """                                                            │
+│   291 │   │   self._validate_params()                                        │
+│   292 │   │   fit_params_steps = self._check_fit_params(**fit_params)        │
+│ ❱ 293 │   │   Xt, yt = self._fit(X, y, **fit_params_steps)                   │
+│   294 │   │   with _print_elapsed_time("Pipeline", self._log_message(len(sel │
+│   295 │   │   │   if self._final_estimator != "passthrough":                 │
+│   296 │   │   │   │   fit_params_last_step = fit_params_steps[self.steps[-1] │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/ │
+│ pipeline.py:250 in _fit                                                      │
+│                                                                              │
+│   247 │   │   │   │   │   **fit_params_steps[name],                          │
+│   248 │   │   │   │   )                                                      │
+│   249 │   │   │   elif hasattr(cloned_transformer, "fit_resample"):          │
+│ ❱ 250 │   │   │   │   X, y, fitted_transformer = fit_resample_one_cached(    │
+│   251 │   │   │   │   │   cloned_transformer,                                │
+│   252 │   │   │   │   │   X,                                                 │
+│   253 │   │   │   │   │   y,                                                 │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/joblib/me │
+│ mory.py:594 in __call__                                                      │
+│                                                                              │
+│    591 │   │   │   │   │   │   │      timestamp=self.timestamp)              │
+│    592 │                                                                     │
+│    593 │   def __call__(self, *args, **kwargs):                              │
+│ ❱  594 │   │   return self._cached_call(args, kwargs)[0]                     │
+│    595 │                                                                     │
+│    596 │   def __getstate__(self):                                           │
+│    597 │   │   # Make sure self.func's source is introspected prior to being │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/joblib/me │
+│ mory.py:537 in _cached_call                                                  │
+│                                                                              │
+│    534 │   │   │   │   must_call = True                                      │
+│    535 │   │                                                                 │
+│    536 │   │   if must_call:                                                 │
+│ ❱  537 │   │   │   out, metadata = self.call(*args, **kwargs)                │
+│    538 │   │   │   if self.mmap_mode is not None:                            │
+│    539 │   │   │   │   # Memmap the output at the first call to be consisten │
+│    540 │   │   │   │   # later calls                                         │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/joblib/me │
+│ mory.py:779 in call                                                          │
+│                                                                              │
+│    776 │   │   func_id, args_id = self._get_output_identifiers(*args, **kwar │
+│    777 │   │   if self._verbose > 0:                                         │
+│    778 │   │   │   print(format_call(self.func, args, kwargs))               │
+│ ❱  779 │   │   output = self.func(*args, **kwargs)                           │
+│    780 │   │   self.store_backend.dump_item(                                 │
+│    781 │   │   │   [func_id, args_id], output, verbose=self._verbose)        │
+│    782                                                                       │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/ │
+│ pipeline.py:422 in _fit_resample_one                                         │
+│                                                                              │
+│   419                                                                        │
+│   420 def _fit_resample_one(sampler, X, y, message_clsname="", message=None, │
+│   421 │   with _print_elapsed_time(message_clsname, message):                │
+│ ❱ 422 │   │   X_res, y_res = sampler.fit_resample(X, y, **fit_params)        │
+│   423 │   │                                                                  │
+│   424 │   │   return X_res, y_res, sampler                                   │
+│   425                                                                        │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/ │
+│ base.py:203 in fit_resample                                                  │
+│                                                                              │
+│   200 │   │   │   The corresponding label of `X_resampled`.                  │
+│   201 │   │   """                                                            │
+│   202 │   │   self._validate_params()                                        │
+│ ❱ 203 │   │   return super().fit_resample(X, y)                              │
+│   204 │                                                                      │
+│   205 │   def _more_tags(self):                                              │
+│   206 │   │   return {"X_types": ["2darray", "sparse", "dataframe"]}         │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/ │
+│ base.py:88 in fit_resample                                                   │
+│                                                                              │
+│    85 │   │   │   self.sampling_strategy, y, self._sampling_type             │
+│    86 │   │   )                                                              │
+│    87 │   │                                                                  │
+│ ❱  88 │   │   output = self._fit_resample(X, y)                              │
+│    89 │   │                                                                  │
+│    90 │   │   y_ = (                                                         │
+│    91 │   │   │   label_binarize(output[1], classes=np.unique(y)) if binariz │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/imblearn/ │
+│ over_sampling/_smote/base.py:355 in _fit_resample                            │
+│                                                                              │
+│   352 │   │   │   X_class = _safe_indexing(X, target_class_indices)          │
+│   353 │   │   │                                                              │
+│   354 │   │   │   self.nn_k_.fit(X_class)                                    │
+│ ❱ 355 │   │   │   nns = self.nn_k_.kneighbors(X_class, return_distance=False │
+│   356 │   │   │   X_new, y_new = self._make_samples(                         │
+│   357 │   │   │   │   X_class, y.dtype, class_sample, X_class, nns, n_sample │
+│   358 │   │   │   )                                                          │
+│                                                                              │
+│ /home2/taraw28/miniconda3/envs/SADTech/lib/python3.9/site-packages/sklearn/n │
+│ eighbors/_base.py:810 in kneighbors                                          │
+│                                                                              │
+│    807 │   │                                                                 │
+│    808 │   │   n_samples_fit = self.n_samples_fit_                           │
+│    809 │   │   if n_neighbors > n_samples_fit:                               │
+│ ❱  810 │   │   │   raise ValueError(                                         │
+│    811 │   │   │   │   "Expected n_neighbors <= n_samples, "                 │
+│    812 │   │   │   │   " but n_samples = %d, n_neighbors = %d" % (n_samples_ │
+│    813 │   │   │   )                                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ValueError: Expected n_neighbors <= n_samples,  but n_samples = 1, n_neighbors =
+3

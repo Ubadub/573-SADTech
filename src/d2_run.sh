@@ -1,5 +1,7 @@
 #!/bin/sh
 
+
+ENV_PATH=/home2/taraw28/miniconda3/envs/SADTech
 DEBUG="${1:-no}"
 
 if [[ "$DEBUG" == "yes" ]]
@@ -8,8 +10,15 @@ then
     set -euo pipefail
 else
     echo "Activating Environment"
-    source ~/anaconda3/etc/profile.d/conda.sh
-    conda activate /home2/taraw28/miniconda3/envs/SADTech
+    CONDA_PROFILE=$(realpath $(dirname $CONDA_EXE)/../etc/profile.d/conda.sh)
+
+    if [[ ! -f $CONDA_PROFILE ]]
+    then
+        echo "Conda profile not found. Tried searching at path $CONDA_PROFILE. If this is not where your conda is installed, please edit the script with the correct path. Exiting."
+        exit 1
+    fi
+    source $CONDA_PROFILE
+    conda activate $ENV_PATH
 fi
 
 owd="$(pwd)"
