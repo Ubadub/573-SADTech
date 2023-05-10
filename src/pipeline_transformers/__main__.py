@@ -39,8 +39,8 @@ CFG_KWARGS = "kwargs"
 TEXT_COL = "text"
 AUDIO_COL = "audio"
 Y_COL = "label"
-# ALL_FEATS = [AUDIO_COL, TEXT_COL]
-ALL_FEATS = [TEXT_COL]
+ALL_FEATS = [AUDIO_COL, TEXT_COL]
+# ALL_FEATS = [TEXT_COL]
 
 PARSER_CONFIG = {
     # "prog": "python -m transformer_lm",
@@ -135,10 +135,21 @@ def train(cfg_path: str, dataset_path: str, save_model_to: Optional[str] = None)
 
     print("Text transformer:", text_transformer)
 
+    audio_transformers_cfg = cfg.get(CFG_AUDIO_TRANSFORMERS, [])
+    audio_transformer = Pipeline(
+        steps=[
+            (
+                tr[CFG_NAME],
+                tr[CFG_CLASS](*tr.get(CFG_ARGS, []), **tr.get(CFG_KWARGS, {})),
+            )
+            for tr in audio_transformers_cfg
+        ],
+    )
+
     preprocessor = ColumnTransformer(
         transformers=[
             ("text", text_transformer, TEXT_COL),
-            # ("audio", audio_transformer, AUDIO_COL),
+            ("audio", audio_transformer, AUDIO_COL),
         ],
         n_jobs=-1,
     )

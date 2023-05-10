@@ -1,5 +1,7 @@
 """
 Creates audio vectors.
+
+testing: python3 -m pipeline_transformers  -d ../data/tam/train_dataset_dict train -c config/audio_vectorization/tfidf_wav2vec2_logistic.yml  -m ../outputs/debug/tam
 """
 
 from typing import Optional
@@ -7,10 +9,12 @@ import argparse
 import numpy as np
 
 import datasets
+from datasets.features import Audio
 
+from sklearn.base import BaseEstimator, TransformerMixin
 from transformers import Wav2Vec2FeatureExtractor, ClapFeatureExtractor#, MCTCTFeatureExtractor
 
-class AudioFeatureExtractor():
+class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
     """
     Constructor
 
@@ -22,20 +26,23 @@ class AudioFeatureExtractor():
             - mctct
     """
     def __init__(self, strategy: Optional[str]):
-        self._strat = strategy
+        self.strategy = strategy
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X, y=None):
-        if self._strat == "wav2vec2":
-            return self.get_wav2vec2_features(X)
-        elif self._strat == "clap":
-            return self.get_clap_features(X)
-        elif self._strat == "mctct":
-            return self.get_mctct_features(X)
+        converter = Audio(sampling_rate=16000)
+        audio_array = [converter.decode_example(x)["array"] for x in X]
+
+        if self.strategy == "wav2vec2":
+            return self.get_wav2vec2_features(audio_array)
+        elif self.strategy == "clap":
+            return self.get_clap_features(audio_array)
+        elif self.strategy == "mctct":
+            return self.get_mctct_features(audio_array)
         else:
-            return self.get_wav2vec2_features(X)
+            return self.get_wav2vec2_features(audio_array)
 
 
     @staticmethod
@@ -101,13 +108,14 @@ def main():
 
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(f"../data/{lang}/train_dataset_dict")
 
-    audio_array = [audio_dict["array"] for audio_dict in ds_dict["train"]["audio"]]
+    # audio_array = [audio_dict["array"] for audio_dict in ds_dict["train"]["audio"]]
+    # print(audio_array)
 
-    vectors = AudioFeatureExtractor.get_wav2vec2_features(audio_array)
+    # vectors = AudioFeatureExtractor.get_wav2vec2_features(audio_array)
     # vectors = get_clap_features(audio_array)
     # vectors = get_mctct_features(audio_array)
 
-    print(vectors)
+    # print(vectors)
 
 
 if __name__ == "__main__":
