@@ -1,13 +1,15 @@
 """
 Creates audio vectors.
+
+testing: python3 -m pipeline_transformers  -d ../data/tam/train_dataset_dict train -c config/audio_vectorization/tfidf_wav2vec2_logistic.yml  -m ../outputs/debug/tam
 """
 
 from typing import Optional
 import argparse
 import numpy as np
-import pickle
 
 import datasets
+from datasets.features import Audio
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from transformers import Wav2Vec2FeatureExtractor, ClapFeatureExtractor#, MCTCTFeatureExtractor
@@ -30,12 +32,8 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-        print()
-        print(type(X[0]))
-        print(dict(X[0]).keys())
-        print(pickle.loads(X[0]["bytes"]))
-        print()
-        audio_array = [audio_dict["array"] for audio_dict in X]
+        converter = Audio(sampling_rate=16000)
+        audio_array = [converter.decode_example(x)["array"] for x in X]
 
         if self.strategy == "wav2vec2":
             return self.get_wav2vec2_features(audio_array)
