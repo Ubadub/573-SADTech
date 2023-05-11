@@ -19,6 +19,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 class TFIDF:
 
+    TFIDF_UNK = "<@tfidf_unk$>"
+
     def __init__(
             self,
             data: list[str],
@@ -27,7 +29,7 @@ class TFIDF:
         self.data = data
         self.N = len(self.data)
 
-        self.idf = {"<unk>": 0}
+        self.idf = {self.TFIDF_UNK: 0}
         self.tf = {}
 
         # calculate tfidf scores
@@ -42,7 +44,7 @@ class TFIDF:
         example_num = 0
         for example in self.data:
 
-            self.tf[(example_num, "<unk>")] = 1
+            self.tf[(example_num, self.TFIDF_UNK)] = 1
 
             for token in example:
                 file_token = (example_num, token)
@@ -84,7 +86,7 @@ class TFIDF:
         token = item[1]
 
         if (token not in self.idf) or (item not in self.tf):
-            item = (file_name, "<unk>")
+            item = (file_name, self.TFIDF_UNK)
 
         return self.tf[item] * self.idf[item[1]]
 
@@ -101,7 +103,7 @@ class TFIDF:
             raise ValueError(f"Expected a token as a string, got {token} instead")
 
         if token not in self.idf:
-            token = "<unk>"
+            token = self.TFIDF_UNK
 
         return self.idf[token]
 
@@ -123,7 +125,7 @@ class TFIDF:
             raise ValueError(f"Expected a tuple (file_name, token), got {item} instead")
 
         if item not in self.tf:
-            item = (item[0], "<unk>")
+            item = (item[0], self.TFIDF_UNK)
 
         return self.tf[item]
 
@@ -184,12 +186,8 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         self.tokenizer = AutoTokenizer.from_pretrained(self.language_model)
         self.model = AutoModel.from_pretrained(self.language_model)
 
-
-        self.tokens = []
-        self.token_ids = []
+        # tfidf weights for vector combinations
         self.tfidf = None
-
-        # self.vectorize()
 
 
     def _tokenize_example(self, example: str) -> list[str]:
@@ -229,13 +227,15 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         Returns:
             - self: an instance of itself to be saved for later use
         """
-        self.token_ids = [self._tokenize_example(example) for example in X]
-        self.tokens = [self.tokenizer.convert_ids_to_tokens(token_ids) for token_ids in self.token_ids]
+        token_ids = [self._tokenize_example(example) for example in X]
+        tokens = [self.tokenizer.convert_ids_to_tokens(ids) for ids in token_ids]
+
+        # TODO: don't need to have a self.token_ids necessarily
 
         # print(self.token_ids[0][:10])
         # print(self.tokens[0][:10])
 
-        self.tfidf = TFIDF(self.tokens)
+        self.tfidf = TFIDF(tokens)
 
 
         # print("tf:", self.tfidf.get_tf((len(self.tokens) - 1, "▁ஆக")))
@@ -255,9 +255,10 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         Returns:
             - A matrix of shape [D, E] where D is the size of the document set and E is the size of
                 the document embeddings (feature size)
-        # TODO: iterate through the list of strings, call autotokenize and grab embeddings like usual
-
         """
+        token_ids = [self._tokenize_example(example) for example in X]
+
+        # TODO: retokenize the incoming X, and then use self.tfidf for tfidf weights
         word_embeddings = self.model.embeddings.word_embeddings.weight
 
         # vectors = list(
@@ -270,13 +271,15 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         #     )
         # )
 
+
+
         vectors = [
             self._vectorize(
                 file_index=file_index,
                 input_ids=input_ids,
                 w_e=word_embeddings
             )
-            for file_index, input_ids in enumerate(self.token_ids)
+            for file_index, input_ids in enumerate(token_ids)
         ]
 
         # print("token_ids", self.token_ids[0][:10])
@@ -319,6 +322,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         """
         # grab the current indices mapped to the tokens that make up the current document
         # print("w_e type:", type(w_e))
+        tokens = [self.tokenizer.convert_ids_to_tokens(token_ids) for token_ids in input_ids]
 
         # grab the current tensors corresponding to the tokens in the current document
         w_i = w_e[input_ids]
@@ -331,6 +335,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                 file_name=file_index,
                 word_embeddings=w_i,
                 input_ids=input_ids,
+                tokens=tokens
             )
         else:
             # get unweighted average
@@ -346,17 +351,21 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                           file_name: int,
                           word_embeddings: torch.Tensor,
                           input_ids: list[int],
+                          tokens: list[str]
                           ) -> torch.Tensor:
         """
         Params:
             - file_name: The file number
             - word_embeddings: A embeddings size [Document_size, word_embedding size]
             - input_ids: sequence of tokens in the given document as as integers
+            - tokens: sequence of tokens in the given document
+                Should have a one-to-one correspondence with input_ids
 
         Returns:
             - A tfidf weighted average over all tokens embeddings contained in a document
                 representing a document vector
         """
+        assert len(input_ids) == len(tokens)
         # print("word_embedding type:", type(word_embeddings))
         # print("word_embeddings[0] type:", type(word_embeddings[0]))
         # print("word_embeddings[0][0] type:", type(word_embeddings[0]))
