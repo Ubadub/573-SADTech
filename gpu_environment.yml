@@ -26,6 +26,8 @@ dependencies:
   - transformers=4.*
   - accelerate
   - sentencepiece=0.*
+  - librosa=0.*
+  - pysoundfile>=0.12.1
   - hydra-core=1.*
   - ftfy=6.*
   - flax=0.*
