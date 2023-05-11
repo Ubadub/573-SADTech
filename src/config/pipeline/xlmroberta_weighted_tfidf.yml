@@ -1,0 +1,59 @@
+# Assumes running from src/ directory
+
+TextTransformers:
+  - name: "weighted_tfidf_vectors"
+    class: !!python/name:pipeline_transformers.xlmroberta_weighted_tfidf.DocumentEmbeddings
+    args: []
+    kwargs:
+      language_model: "xlm-roberta-base"
+      tfidf_output_path: "../outputs/embeddings/tam_tfidf.pickle"
+      tfidf_weighted: True
+
+
+
+
+
+#AudioTransformers: []
+
+#Resamplers:
+#  - name: "smote"
+#    class: !!python/name:imblearn.over_sampling.SMOTE
+#    args: []
+#    kwargs:
+#      k_neighbors: 2
+#      random_state: !!python/name:common.GLOBAL_SEED
+#AudioTransformers: []
+Classifier:
+   class: !!python/name:sklearn.linear_model.LogisticRegression
+   args: []
+   kwargs:
+     #class_weight: "balanced"
+     max_iter: 1000
+
+
+
+#TextTransformers:
+#  - name: "indic_bert"
+#    class: !!python/name:pipeline_transformers.vectorizers.TransformerLayerVectorizer
+#    args: []
+#    kwargs:
+#      language_model: "ai4bharat/indic-bert"
+#      layers_to_combine:
+#        - -1
+#        - -2
+#        - -3
+#        - -4
+#AudioTransformers: []
+#Resamplers:
+#  - name: "smote"
+#    class: !!python/name:imblearn.over_sampling.SMOTE
+#    args: []
+#    kwargs:
+#      k_neighbors: 2
+#      random_state: !!python/name:common.GLOBAL_SEED
+#Classifier:
+#   class: !!python/name:sklearn.linear_model.LogisticRegression
+#   args: []
+#   kwargs:
+#     #class_weight: "balanced"
+#     max_iter: 1000
