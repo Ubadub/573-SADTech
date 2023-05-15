@@ -2,3 +2,6 @@
 */text/*
 */video/*
 */*dataset_dict*/
+
+test_data/
+*/merged.csv
