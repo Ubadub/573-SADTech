@@ -36,6 +36,7 @@ dependencies:
   - types-requests
   - types-setuptools
   - types-tabulate
+  - openpyxl
   - pip:
     - types-pywin32
     - types-tqdm
