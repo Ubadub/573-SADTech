@@ -19,7 +19,7 @@ hydra:
         exclude_keys:
           - dataset
           - debug
-          - experiment
+          - launcher_config
           - lang
           - seed
           # - pipeline.classifier
