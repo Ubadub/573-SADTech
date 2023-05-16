@@ -1,11 +1,11 @@
 defaults:
   - text:
     - vectorizer/TransformerLayerVectorizer
-  - /classifiers@classifier: rf
+  # - /classifiers@classifier: rf
   - _self_
 text:
   vectorizer: ???
 audio: []
 joint: []
-classifier: ???
+# classifier: ???
 # model_save_path: saved_model/

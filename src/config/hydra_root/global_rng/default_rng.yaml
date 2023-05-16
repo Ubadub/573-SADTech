@@ -1,2 +1,2 @@
 _target_: numpy.random.RandomState
-seed: 573
+seed: ${seed}

@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
-#SBATCH --gres=gpu:rtx6k:1
+#SBATCH --gres=gpu:a40:1
 #SBATCH --time=3:00:00 # Max runtime in DD-HH:MM:SS format.
 
 #SBATCH --chdir=/mmfs1/gscratch/stf/abhinavp/573-SADTech/env_management/
@@ -24,3 +24,4 @@
 # ignored
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --chdir=/mmfs1/gscratch/stf/abhinavp/573-SADTech
+#SBATCH --gres=gpu:rtx6k:1

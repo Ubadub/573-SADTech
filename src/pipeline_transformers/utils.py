@@ -1,7 +1,21 @@
+import re
 from typing import Any
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
+
+KV_SEP = r"="
+ITEM_SEP = r"/"
+
+def clean_path(path: str) -> str:
+    matches = re.findall(f"{KV_SEP}(.*?)(?:{ITEM_SEP}|$)", path)
+    if matches:
+        return ITEM_SEP.join(matches)
+    else:
+        return path
+
+OmegaConf.register_new_resolver("clean_path", clean_path)
+# OmegaConf.register_new_resolver("clean_path", lambda x: x.split("=")[-1] if "=" in x else x)
 
 OmegaConf.register_new_resolver("ref", lambda x: f"${{ref:{x}}}")
 

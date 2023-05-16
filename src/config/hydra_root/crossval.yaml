@@ -6,4 +6,5 @@ dataset: ???
 debug: False
 global_rng: ???
 n_splits: 4
+seed: 573
 # mode: crossfold
