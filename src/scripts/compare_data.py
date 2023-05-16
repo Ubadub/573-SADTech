@@ -28,8 +28,6 @@ def get_merged_df(lang):
 
     test_df = get_df(f"../data/test_data/{lang}/text")
     test_merged_df = real_df.merge(test_df, on="text_data", how="outer", suffixes=["_real", "_test"])
-    test_merged_df = test_merged_df[["file_name_real", "label_real", "file_name_test"]]
-    test_merged_df = test_merged_df.sort_values(["file_name_real", "file_name_test"])
 
     train_labels = None
     if lang == "mal":
@@ -44,26 +42,24 @@ def get_merged_df(lang):
     train_df = get_df(f"../data/train_data/{lang}/text")
     train_df = train_df.merge(train_labels, on="file_name")
     train_merged_df = real_df.merge(train_df, on="text_data", how="outer", suffixes=["_real", "_train"])
-    train_merged_df = train_merged_df[["file_name_real", "label_real", "file_name_train", "label_train"]]
-    train_merged_df = train_merged_df.sort_values(["file_name_real", "file_name_train"])
 
-    return (test_merged_df, train_merged_df)
+    merged_df = train_merged_df.merge(test_merged_df, on=["text_data", "file_name_real", "label_real"], how="outer")
+    merged_df = merged_df[["file_name_real", "label_real", "file_name_train", "label_train", "file_name_test"]]
+    merged_df = merged_df.sort_values(["file_name_real", "file_name_train", "file_name_test"])
+
+    return merged_df
 
 
 def main():
-    # (mal_test_merged_df, mal_train_merged_df) = get_merged_df("mal")
-    # mal_test_merged_df.to_csv("../data/mal/test_merged.csv", index=False)
-    # mal_train_merged_df.to_csv("../data/mal/train_merged.csv", index=False)
+    mal_merged_df = get_merged_df("mal")
+    mal_merged_df.to_csv("../data/mal/merged.csv", index=False)
+    with open("../data/mal/merged.txt", "w") as wf:
+        wf.write(mal_merged_df.to_string(index=False))
 
-    # (tam_test_merged_df, tam_train_merged_df) = get_merged_df("tam")
-    # tam_test_merged_df.to_csv("../data/tam/test_merged.csv", index=False)
-    # tam_train_merged_df.to_csv("../data/tam/train_merged.csv", index=False)
-
-    print("##### Mal Train Data Merged #####")
-    print(pd.read_csv("../data/mal/train_merged.csv").to_string())
-    print()
-    print("##### Tam Train Data Merged #####")
-    print(pd.read_csv("../data/tam/train_merged.csv").to_string())
+    tam_merged_df = get_merged_df("tam")
+    tam_merged_df.to_csv("../data/tam/merged.csv", index=False)
+    with open("../data/tam/merged.txt", "w") as wf:
+        wf.write(tam_merged_df.to_string(index=False))
 
 
 if __name__ == "__main__":
