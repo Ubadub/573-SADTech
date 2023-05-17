@@ -6,12 +6,13 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.9.*
+  - python>=3.10
   - pip=23.*
-  - pytorch=2.*
-  - pytorch-cuda=11.*
   - black
   - mypy
+  - pytorch=2.*
+  - pytorch-cuda=11.*
+  - torchaudio
   - plotnine=0.*
   - nltk=3.*
   - stanfordcorenlp=3.*
@@ -28,17 +29,19 @@ dependencies:
   - sentencepiece=0.*
   - librosa=0.*
   - pysoundfile>=0.12.1
-  - hydra-core=1.*
   - ftfy=6.*
   - flax=0.*
+  - hydra-core=1.*
   - pyyaml=6.*
   - types-pyyaml
-  - lxml-stubs
+  - openpyxl
   - types-openpyxl
+  - lxml-stubs
   - types-Pillow
   - types-requests
   - types-setuptools
   - types-tabulate
   - pip:
+    - hydra-submitit-launcher
     - types-pywin32
     - types-tqdm
