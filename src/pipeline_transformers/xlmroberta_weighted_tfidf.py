@@ -1,5 +1,9 @@
 """
 Document Embeddings: (Optional) TFIDF Weighted Average Word Embeddings
+
+Example run:
+python3 -m pipeline_transformers -d ../data/tam/train_dataset_dict train
+    -c config/pipeline/xlmroberta_weighted_tfidf.yml -m ../outputs/debug/tam
 """
 
 import math
