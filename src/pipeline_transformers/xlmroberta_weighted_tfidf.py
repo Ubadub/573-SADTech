@@ -44,6 +44,10 @@ class TFIDF:
 
 
     def _obtain_tf_and_idf_counts(self) -> None:
+        """
+            Creates term-frequency (tf) counts
+            Creates document frequency counts
+        """
         example_num = 0
         for example in self.data:
 
@@ -66,6 +70,9 @@ class TFIDF:
 
 
     def _obtain_idf(self) -> None:
+        """
+            Transforms document frequency counts into inverse document frequency (idf)
+        """
         for token, count in self.idf.items():
             idf = math.log(self.N / (1 + count))
             self.idf[token] = idf
@@ -156,17 +163,12 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
     ) -> None:
         """
             Params:
-                - config: the dictionary read from a config.yml file
-                - ds_dict: A HuggingFace Dataset Object with entries ["file", "label", "text"]
+                - language_model: the pretrained language model (e.g. XLM-Roberta)
+                - tfidf_weighted: whether or not the resulting document vectors are combined using
+                    tfidf weights
 
-            This appends the entries ["token_indices", "tokens", "vectors"] to the given
-                HuggingFace Dataset Object using the specified pretrained model in the config.yml file
-                - "token_indices" list of token indices in a document after tokenization
-                - "tokens" list of tokens in a document after tokenization
-                - "vectors" binarization of numpy arrays that represent document embeddings created
-                    by the (tfidf weighted) average of token vectors pulled from the specified pretrained model
-
-                NOTE: token_indices and tokens have a one-to-one correspondence
+            Initializes a DocumentEmbeddings object for use in Sklearn's pipeline. This object creates
+                document vectors as (tfidf weighted) averaged word embeddings for use in downstream tasks
         """
         super().__init__()
         self.language_model = language_model
@@ -177,7 +179,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         self.model = AutoModel.from_pretrained(self.language_model)
 
 
-    def _tokenize_example(self, example: str) -> list[str]:
+    def _tokenize_example(self, example: str) -> list[int]:
         """
         Params:
             - example: the text of a document
@@ -185,8 +187,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         Tokenizes the given text, creates a one-to=one mapping between token indices and tokens
 
         Returns:
-            - A dictionary of dictionaries where "token_indices" is mapped to a dictionary containing
-                the key "input_ids" mapped to token indices
+            - A list of tokens, where each token is represented by its corresponding index
         """
         example_len = len(example)
         tokens = []
@@ -209,7 +210,8 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
             It is just the ['text'] column of the HuggingFace Dataset
 
         Tokenizes the dataset, creating tokens and token_ids
-        Creates a tfidf object which can be loaded in later
+        Creates a tfidf object which can be loaded in for later use in
+            Sklearn's transform() function
 
         Returns:
             - self: an instance of itself to be saved for later use
@@ -227,7 +229,10 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         """
         Params:
             - X: matrix of shape [D, 1] where D is size of document set
-            It is just the ['text'] column of the HuggingFace Dataset
+            It is just like the ['text'] column of the HuggingFace Dataset
+
+        This creates document embeddings using the (tfidf weighted) average of the
+            word vectors from the pretrained language model
 
         Returns:
             - A matrix of shape [D, E] where D is the size of the document set and E is the size of
@@ -257,11 +262,11 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                    ) -> None:
         """
             Params:
-                - example: An entry of the HuggingFace Dataset object
+                - file_index: the index of the current document
+                - input_ids: A list of tokens as indices representing the current document
                 - w_e: The token embeddings obtained from the pretrained model's word embedding layer
 
-            Takes an entry of a HuggingFace dataset, as well as the word embedding layer of the
-                pretrained model. Creates a (weighted) average of the token vectors constituting the
+            Creates a (tfidf weighted) average of the token vectors constituting the
                 given entry of the HuggingFace dataset.
         """
         # grab the current tensors corresponding to the tokens in the current document
@@ -291,7 +296,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         """
         Params:
             - file_name: The file number
-            - word_embeddings: A embeddings size [Document_size, word_embedding size]
+            - word_embeddings: A embedding size [Document_size, word_embedding size]
             - input_ids: sequence of tokens in the given document as as integers
             - tokens: sequence of tokens in the given document
                 Should have a one-to-one correspondence with input_ids
