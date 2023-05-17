@@ -2,30 +2,32 @@
 Document Embeddings: (Optional) TFIDF Weighted Average Word Embeddings
 """
 
-import sys
-import yaml
 import math
-import os
 import numpy as np
-
-
-import datasets
 import torch
-import pickle
 from transformers import AutoTokenizer, AutoModel
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-
 class TFIDF:
+    """
+        Creates a TFIDF object, storing term frequencies, and inverse document frequencies
+    """
 
     TFIDF_UNK = "<@tfidf_unk$>"
 
     def __init__(
             self,
-            data: list[str],
+            data: list[list[str]],
 
     ) -> None:
+        """
+            Params:
+                - data: A data set represented by a list of list of tokens. Each inner list represents
+                    one document in the data set.
+
+        Initializes a TFIDF object
+        """
         self.data = data
         self.N = len(self.data)
 
@@ -33,14 +35,11 @@ class TFIDF:
         self.tf = {}
 
         # calculate tfidf scores
-        self.obtain_tf_and_idf_counts()
-        self.obtain_idf()
-
-        # self.pickle_save()
+        self._obtain_tf_and_idf_counts()
+        self._obtain_idf()
 
 
-    def obtain_tf_and_idf_counts(self) -> None:
-
+    def _obtain_tf_and_idf_counts(self) -> None:
         example_num = 0
         for example in self.data:
 
@@ -62,7 +61,7 @@ class TFIDF:
             example_num += 1
 
 
-    def obtain_idf(self) -> None:
+    def _obtain_idf(self) -> None:
         for token, count in self.idf.items():
             idf = math.log(self.N / (1 + count))
             self.idf[token] = idf
@@ -144,20 +143,11 @@ class TFIDF:
         return self.__getitem__(item)
 
 
-    # def pickle_save(self):
-    #     out_file = self.lang + "_tfidf.pickle"
-    #     output_path = os.path.join(self.output_dir, out_file)
-    #
-    #     with open(output_path, "wb") as out:
-    #         pickle.dump(self, file=out, protocol=pickle.HIGHEST_PROTOCOL)
-
-
 class DocumentEmbeddings(BaseEstimator, TransformerMixin):
 
     def __init__(
             self,
             language_model: str,
-            tfidf_output_path: str,
             tfidf_weighted: bool = True,
     ) -> None:
         """
@@ -174,20 +164,13 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
 
                 NOTE: token_indices and tokens have a one-to-one correspondence
         """
-        # with open(config_path, "r") as ymlfile:
-        #     self.config = yaml.load(ymlfile, Loader=yaml.Loader)
-        # self.config = self.config["TextTransformers"][0]["kwargs"]
         super().__init__()
         self.language_model = language_model
-        self.tfidf_output_path = tfidf_output_path
         self.tfidf_weighted = tfidf_weighted
 
         # pretrained model
         self.tokenizer = AutoTokenizer.from_pretrained(self.language_model)
         self.model = AutoModel.from_pretrained(self.language_model)
-
-        # tfidf weights for vector combinations
-        self.tfidf = None
 
 
     def _tokenize_example(self, example: str) -> list[str]:
@@ -230,17 +213,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         token_ids = [self._tokenize_example(example) for example in X]
         tokens = [self.tokenizer.convert_ids_to_tokens(ids) for ids in token_ids]
 
-        # TODO: don't need to have a self.token_ids necessarily
-
-        # print(self.token_ids[0][:10])
-        # print(self.tokens[0][:10])
-
-        self.tfidf = TFIDF(tokens)
-
-
-        # print("tf:", self.tfidf.get_tf((len(self.tokens) - 1, "▁ஆக")))
-        # print("idf:", self.tfidf.get_idf("▁ஆக"))
-        # print("tfidf:", self.tfidf[len(self.tokens) - 1, "▁ஆக"])
+        self.tfidf_ = TFIDF(tokens)
 
         return self
 
@@ -258,20 +231,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         """
         token_ids = [self._tokenize_example(example) for example in X]
 
-        # TODO: retokenize the incoming X, and then use self.tfidf for tfidf weights
         word_embeddings = self.model.embeddings.word_embeddings.weight
-
-        # vectors = list(
-        #     map(
-        #         lambda input_ids: self._vectorize(
-        #             input_ids=input_ids,
-        #             w_e=word_embeddings,
-        #         ),
-        #         self.token_ids
-        #     )
-        # )
-
-
 
         vectors = [
             self._vectorize(
@@ -282,26 +242,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
             for file_index, input_ids in enumerate(token_ids)
         ]
 
-        # print("token_ids", self.token_ids[0][:10])
-        # print("tokens", self.tokens[0][:10])
-
-        print("vectors_0", vectors[0][:10])
-        print("vectors_1", vectors[1][:10])
-
-        vectors = np.array(vectors)
-        print("vectors shape", vectors.shape)
-
-        return vectors
-        # return None
-
-
-    # def vectorize(self):
-    #     """
-    #     This creates a new "vectors" entry to the given HuggingFace Dataset object. Stored
-    #         in this dataset object is the binarization of a torch tensor. Each torch tensor
-    #         represents the (weighted) average corresponding to the same "text" entry in the
-    #         HuggingFace Dataset object.
-    #     """
+        return np.array(vectors)
 
 
     @torch.no_grad()
@@ -309,7 +250,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                    file_index: int,
                    input_ids: list[int],
                    w_e: torch.nn.parameter.Parameter,
-                   # tfidf: TFIDF = None
                    ) -> None:
         """
             Params:
@@ -320,14 +260,8 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                 pretrained model. Creates a (weighted) average of the token vectors constituting the
                 given entry of the HuggingFace dataset.
         """
-        # grab the current indices mapped to the tokens that make up the current document
-        # print("w_e type:", type(w_e))
-        tokens = [self.tokenizer.convert_ids_to_tokens(token_ids) for token_ids in input_ids]
-
         # grab the current tensors corresponding to the tokens in the current document
         w_i = w_e[input_ids]
-
-        # print(w_i)
 
         if self.tfidf_weighted:
             # get tfidf weighted average
@@ -335,14 +269,12 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                 file_name=file_index,
                 word_embeddings=w_i,
                 input_ids=input_ids,
-                tokens=tokens
             )
         else:
             # get unweighted average
             document_vector = torch.mean(w_i, dim=0)
             document_vector = document_vector.detach().cpu().numpy()
 
-        print("document_vector shape", document_vector.shape)
         return document_vector
 
 
@@ -351,7 +283,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                           file_name: int,
                           word_embeddings: torch.Tensor,
                           input_ids: list[int],
-                          tokens: list[str]
                           ) -> torch.Tensor:
         """
         Params:
@@ -365,10 +296,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
             - A tfidf weighted average over all tokens embeddings contained in a document
                 representing a document vector
         """
-        assert len(input_ids) == len(tokens)
-        # print("word_embedding type:", type(word_embeddings))
-        # print("word_embeddings[0] type:", type(word_embeddings[0]))
-        # print("word_embeddings[0][0] type:", type(word_embeddings[0]))
         num_tokens, embedding_size = word_embeddings.size()
         tokens = self.tokenizer.convert_ids_to_tokens(input_ids)
         document_embedding = np.zeros(embedding_size)
@@ -378,23 +305,8 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
             cur_embedding = word_embeddings[i].detach().cpu().numpy()
 
             token = tokens[i]
-            token_tfidf = self.tfidf[file_name, token]
+            token_tfidf = self.tfidf_[file_name, token]
             weighted_embedding = np.multiply(token_tfidf, cur_embedding)
             document_embedding = np.add(document_embedding, weighted_embedding)
 
-        print(f"Finished document embedding for {file_name}\n")
-
         return document_embedding
-
-
-
-
-
-# if __name__ == '__main__':
-#     config_file = sys.argv[1]
-#     with open(config_file, "r") as ymlfile:
-#         config = yaml.load(ymlfile, Loader=yaml.Loader)
-#
-#     ds_dict: datasets.DatasetDict = datasets.load_from_disk(config["data_path"])
-#
-#     document_embeddings = DocumentEmbeddings(config, ds_dict)

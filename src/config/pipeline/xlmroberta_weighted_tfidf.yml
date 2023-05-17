@@ -6,14 +6,8 @@ TextTransformers:
     args: []
     kwargs:
       language_model: "xlm-roberta-base"
-      tfidf_output_path: "../outputs/embeddings/tam_tfidf.pickle"
       tfidf_weighted: True
-
-
-
-
-
-#AudioTransformers: []
+AudioTransformers: []
 
 Resamplers:
   - name: "smote"
@@ -22,7 +16,7 @@ Resamplers:
     kwargs:
       k_neighbors: 2
       random_state: !!python/name:common.GLOBAL_SEED
-AudioTransformers: []
+
 Classifier:
    class: !!python/name:sklearn.linear_model.LogisticRegression
    args: []
