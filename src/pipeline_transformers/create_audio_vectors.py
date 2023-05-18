@@ -12,7 +12,11 @@ import datasets
 from datasets.features import Audio
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from transformers import Wav2Vec2FeatureExtractor, ClapFeatureExtractor#, MCTCTFeatureExtractor
+from transformers import (
+    Wav2Vec2FeatureExtractor,
+    ClapFeatureExtractor,
+)  # , MCTCTFeatureExtractor
+
 
 class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
     """
@@ -25,6 +29,7 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             - clap
             - mctct
     """
+
     def __init__(self, strategy: Optional[str]):
         self.strategy = strategy
 
@@ -44,7 +49,6 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         else:
             return self.get_wav2vec2_features(audio_array)
 
-
     @staticmethod
     def get_wav2vec2_features(audio_array: list[np.ndarray]) -> np.ndarray:
         """
@@ -55,12 +59,10 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         From: https://huggingface.co/docs/transformers/v4.28.1/en/model_doc/wav2vec2#transformers.Wav2Vec2FeatureExtractor
         """
         feature_extractor = Wav2Vec2FeatureExtractor(sampling_rate=16000)
-        inputs = feature_extractor(audio_array,
-                                return_tensors="np",
-                                sampling_rate=16000,
-                                padding=True)["input_values"]
+        inputs = feature_extractor(
+            audio_array, return_tensors="np", sampling_rate=16000, padding=True
+        )["input_values"]
         return inputs
-
 
     @staticmethod
     def get_clap_features(audio_array: list[np.ndarray]) -> np.ndarray:
@@ -72,12 +74,10 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         From: https://huggingface.co/docs/transformers/model_doc/clap#transformers.ClapFeatureExtractor
         """
         feature_extractor = ClapFeatureExtractor(sampling_rate=16000)
-        inputs = feature_extractor(audio_array,
-                                return_tensors="np",
-                                sampling_rate=16000,
-                                padding=True)["input_features"]
+        inputs = feature_extractor(
+            audio_array, return_tensors="np", sampling_rate=16000, padding=True
+        )["input_features"]
         return inputs
-
 
     # Needs torchaudio library
     @staticmethod
@@ -90,10 +90,9 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         From: https://huggingface.co/docs/transformers/model_doc/mctct#transformers.MCTCTFeatureExtractor
         """
         feature_extractor = MCTCTFeatureExtractor(sampling_rate=16000)
-        inputs = feature_extractor(audio_array,
-                                return_tensors="np",
-                                sampling_rate=16000,
-                                padding=True)["input_features"]
+        inputs = feature_extractor(
+            audio_array, return_tensors="np", sampling_rate=16000, padding=True
+        )["input_features"]
         return inputs
 
 
@@ -106,7 +105,9 @@ def main():
     args = parser.parse_args()
     lang = args.lang
 
-    ds_dict: datasets.DatasetDict = datasets.load_from_disk(f"../data/{lang}/train_dataset_dict")
+    ds_dict: datasets.DatasetDict = datasets.load_from_disk(
+        f"../data/{lang}/train_dataset_dict"
+    )
 
     # audio_array = [audio_dict["array"] for audio_dict in ds_dict["train"]["audio"]]
     # print(audio_array)

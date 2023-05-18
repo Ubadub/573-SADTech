@@ -39,6 +39,7 @@ dependencies:
   - types-requests
   - types-setuptools
   - types-tabulate
+  - mkl < 2022
   - pip:
     - hydra-submitit-launcher
     - types-pywin32
