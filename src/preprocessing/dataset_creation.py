@@ -113,7 +113,9 @@ def assemble_dataset(
     process_raw_dataset_kwargs["text_file_dir"] = text_file_dir
     process_raw_dataset_kwargs["class_labels"] = class_labels
     if tokenizer:
-        process_raw_dataset_kwargs["tokenizer"] = AutoTokenizer.from_pretrained(tokenizer)
+        process_raw_dataset_kwargs["tokenizer"] = AutoTokenizer.from_pretrained(
+            tokenizer
+        )
     # ds = process_raw_dataset(raw_ds, **process_raw_dataset_kwargs)
     ds = raw_ds.map(
         process_raw_dataset,

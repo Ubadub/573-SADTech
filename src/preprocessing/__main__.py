@@ -41,6 +41,10 @@ if output_dir_path:
     os.makedirs(output_dir_path, exist_ok=True)
 
 ds_dict: DatasetDict = assemble_dataset(
-    args.lang, class_labels=CLASS_LABELS, drop_file=args.drop_file, tokenizer=args.tokenizer, model=args.model,
+    args.lang,
+    class_labels=CLASS_LABELS,
+    drop_file=args.drop_file,
+    tokenizer=args.tokenizer,
+    model=args.model,
 )
 ds_dict.save_to_disk(output_path)

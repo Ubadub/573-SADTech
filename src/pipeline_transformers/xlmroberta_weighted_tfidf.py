@@ -15,15 +15,14 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 class TFIDF:
     """
-        Creates a TFIDF object, storing term frequencies, and inverse document frequencies
+    Creates a TFIDF object, storing term frequencies, and inverse document frequencies
     """
 
     TFIDF_UNK = "<@tfidf_unk$>"
 
     def __init__(
-            self,
-            data: list[list[str]],
-
+        self,
+        data: list[list[str]],
     ) -> None:
         """
             Params:
@@ -42,15 +41,13 @@ class TFIDF:
         self._obtain_tf_and_idf_counts()
         self._obtain_idf()
 
-
     def _obtain_tf_and_idf_counts(self) -> None:
         """
-            Creates term-frequency (tf) counts
-            Creates document frequency counts
+        Creates term-frequency (tf) counts
+        Creates document frequency counts
         """
         example_num = 0
         for example in self.data:
-
             self.tf[(example_num, self.TFIDF_UNK)] = 1
 
             for token in example:
@@ -68,24 +65,22 @@ class TFIDF:
 
             example_num += 1
 
-
     def _obtain_idf(self) -> None:
         """
-            Transforms document frequency counts into inverse document frequency (idf)
+        Transforms document frequency counts into inverse document frequency (idf)
         """
         for token, count in self.idf.items():
             idf = math.log(self.N / (1 + count))
             self.idf[token] = idf
 
-
     def __getitem__(self, item: tuple[int, str]) -> float:
         """
-            Params:
-                -file_num: An int representation of the current document
-                -token: A token as a string
+        Params:
+            -file_num: An int representation of the current document
+            -token: A token as a string
 
-            Returns:
-                - the tfidf score of the given token in the given document as a float
+        Returns:
+            - the tfidf score of the given token in the given document as a float
         """
         if not isinstance(item, tuple):
             raise ValueError(f"Expected a tuple (file_name, token), got {item} instead")
@@ -100,14 +95,13 @@ class TFIDF:
 
         return self.tf[item] * self.idf[item[1]]
 
-
     def get_idf(self, token: str) -> float:
         """
-            Params:
-                -token: A token as a string
+        Params:
+            -token: A token as a string
 
-            Returns:
-                - the idf score of the given token as a float
+        Returns:
+            - the idf score of the given token as a float
         """
         if not isinstance(token, str):
             raise ValueError(f"Expected a token as a string, got {token} instead")
@@ -117,17 +111,16 @@ class TFIDF:
 
         return self.idf[token]
 
-
     def get_tf(self, item: tuple[str, str]) -> int:
         """
-            Params:
-                - item: A tuple containing
-                    -file_num: An int representation of the current document
-                    -token: A token as a string
-                Note: Must be a single tuple, unlike self.__getitem__()
+        Params:
+            - item: A tuple containing
+                -file_num: An int representation of the current document
+                -token: A token as a string
+            Note: Must be a single tuple, unlike self.__getitem__()
 
-            Returns:
-                - the tf score of the given token in the given document as an int
+        Returns:
+            - the tf score of the given token in the given document as an int
         """
         if not isinstance(item, tuple):
             raise ValueError(f"Expected a tuple (file_name, token), got {item} instead")
@@ -138,7 +131,6 @@ class TFIDF:
             item = (item[0], self.TFIDF_UNK)
 
         return self.tf[item]
-
 
     def get_tfidf(self, item: tuple[str, str]) -> float:
         """
@@ -155,20 +147,19 @@ class TFIDF:
 
 
 class DocumentEmbeddings(BaseEstimator, TransformerMixin):
-
     def __init__(
-            self,
-            language_model: str,
-            tfidf_weighted: bool = True,
+        self,
+        language_model: str,
+        tfidf_weighted: bool = True,
     ) -> None:
         """
-            Params:
-                - language_model: the pretrained language model (e.g. XLM-Roberta)
-                - tfidf_weighted: whether or not the resulting document vectors are combined using
-                    tfidf weights
+        Params:
+            - language_model: the pretrained language model (e.g. XLM-Roberta)
+            - tfidf_weighted: whether or not the resulting document vectors are combined using
+                tfidf weights
 
-            Initializes a DocumentEmbeddings object for use in Sklearn's pipeline. This object creates
-                document vectors as (tfidf weighted) averaged word embeddings for use in downstream tasks
+        Initializes a DocumentEmbeddings object for use in Sklearn's pipeline. This object creates
+            document vectors as (tfidf weighted) averaged word embeddings for use in downstream tasks
         """
         super().__init__()
         self.language_model = language_model
@@ -177,7 +168,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         # pretrained model
         self.tokenizer = AutoTokenizer.from_pretrained(self.language_model)
         self.model = AutoModel.from_pretrained(self.language_model)
-
 
     def _tokenize_example(self, example: str) -> list[int]:
         """
@@ -202,7 +192,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
             tokens.extend(cur_tokens["input_ids"])
         return tokens
 
-
     def fit(self, X, y=None):
         """
         Params:
@@ -222,7 +211,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         self.tfidf_ = TFIDF(tokens)
 
         return self
-
 
     @torch.no_grad()
     def transform(self, X: list[str], y=None) -> np.ndarray:
@@ -244,30 +232,28 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
 
         vectors = [
             self._vectorize(
-                file_index=file_index,
-                input_ids=input_ids,
-                w_e=word_embeddings
+                file_index=file_index, input_ids=input_ids, w_e=word_embeddings
             )
             for file_index, input_ids in enumerate(token_ids)
         ]
 
         return np.array(vectors)
 
-
     @torch.no_grad()
-    def _vectorize(self,
-                   file_index: int,
-                   input_ids: list[int],
-                   w_e: torch.nn.parameter.Parameter,
-                   ) -> None:
+    def _vectorize(
+        self,
+        file_index: int,
+        input_ids: list[int],
+        w_e: torch.nn.parameter.Parameter,
+    ) -> None:
         """
-            Params:
-                - file_index: the index of the current document
-                - input_ids: A list of tokens as indices representing the current document
-                - w_e: The token embeddings obtained from the pretrained model's word embedding layer
+        Params:
+            - file_index: the index of the current document
+            - input_ids: A list of tokens as indices representing the current document
+            - w_e: The token embeddings obtained from the pretrained model's word embedding layer
 
-            Creates a (tfidf weighted) average of the token vectors constituting the
-                given entry of the HuggingFace dataset.
+        Creates a (tfidf weighted) average of the token vectors constituting the
+            given entry of the HuggingFace dataset.
         """
         # grab the current tensors corresponding to the tokens in the current document
         w_i = w_e[input_ids]
@@ -286,13 +272,13 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
 
         return document_vector
 
-
     @torch.no_grad()
-    def _weighted_average(self,
-                          file_name: int,
-                          word_embeddings: torch.Tensor,
-                          input_ids: list[int],
-                          ) -> torch.Tensor:
+    def _weighted_average(
+        self,
+        file_name: int,
+        word_embeddings: torch.Tensor,
+        input_ids: list[int],
+    ) -> torch.Tensor:
         """
         Params:
             - file_name: The file number
