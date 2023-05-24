@@ -17,7 +17,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.validation import check_is_fitted
 
-from pipeline_transformers.utils import setup_rng, clean_path
+from pipeline_transformers.utils import clean_path, exception_handler, setup_rng
 
 CFG_MODEL_SAVE_PATH = "model_save_path"
 
@@ -39,7 +39,9 @@ log = logging.getLogger(__name__)
 
 
 # def crossfold(clf: BaseEstimator, ds: Dataset, do_fit=True, saved_models_root_path=None):
-def crossfold(clf_or_saved_path: Union[str, BaseEstimator], ds: Dataset, n_splits: int):
+def crossfold(
+    clf_or_saved_path: Union[str, BaseEstimator], ds: Dataset, n_splits: int
+) -> dict:
     # if not do_fit and saved_models_root_path is None:
     #     sys.exit("Need to refit models or pass path to existing models.")
 
@@ -91,7 +93,11 @@ def crossfold(clf_or_saved_path: Union[str, BaseEstimator], ds: Dataset, n_split
         log.info(f"Finished fold {n}")
 
     log.info(classification_report(y_true_pooled, y_pred_pooled))
-    return {"y_true": y_true_pooled, "y_pred": y_pred_pooled, "y_scores": y_scores_pooled}
+    return {
+        "y_true": y_true_pooled,
+        "y_pred": y_pred_pooled,
+        "y_scores": y_scores_pooled,
+    }
 
 
 def train(
@@ -102,7 +108,7 @@ def train(
     # default_cache_path = f"sklearn_cache/{os.path.basename(cfg_path)}/classifier"
     # classifier_cache = cfg.get(CFG_CLASSIFIER_CACHE, default_cache_path)
     # model_save_path = pipeline_cfg.get(CFG_MODEL_SAVE_PATH)
-):
+) -> None:
     text_preprocessors = pipeline_cfg.text
     audio_preprocessors = pipeline_cfg.audio
 
@@ -186,10 +192,10 @@ def train(
         if results_dir:
             os.makedirs(results_dir, exist_ok=True)
         # out_path = os.path.join(results_file, "results.pkl")
-        with open(results_file, 'wb') as f:
+        with open(results_file, "wb") as f:
             pickle.dump(results, file=f)
             log.info(f"Pickled results to {results_file}")
-    
+
     # for n, fitted_clf in enumerate(
     #     crossfold(clf_or_saved_path=clf, ds=ds, n_splits=n_splits)
     # ):
@@ -201,24 +207,46 @@ def train(
     #             log.info(f"Saved model to: {out_path}")
 
 
-def infer(ds: Dataset, saved_models_dir: str):
-    for _ in crossfold(clf_or_saved_path=saved_models_dir, ds=ds):
-        pass
-    # crossfold(clf_or_path=saved_models_dir, ds=ds, do_fit=True)
+# def infer(ds: Dataset, saved_models_dir: str):
+#     for _ in crossfold(clf_or_saved_path=saved_models_dir, ds=ds):
+#         pass
+#     # crossfold(clf_or_path=saved_models_dir, ds=ds, do_fit=True)
 
 
-# @hydra.main( version_base=None, config_path="../config/hydra_root", config_name="config")
+# @hydra.main(version_base=None, config_path="../config/hydra_root", config_name="config")
 @hydra.main(version_base=None, config_path="../config/hydra_root")
+@exception_handler(lambda e: log.critical(e, exc_info=True))
 def main(cfg: DictConfig) -> None:
     log.info(f"override_dirname: {HydraConfig.get().job.override_dirname}")
     log.info(f"cleaned_override_dirname: {cfg.cleaned_override_dirname}")
-    log.info(f"hydra.sweep.dir/subdir: {HydraConfig.get().sweep.dir}/{HydraConfig.get().sweep.subdir}")
+    log.info(
+        f"hydra.sweep.dir/subdir: {HydraConfig.get().sweep.dir}/{HydraConfig.get().sweep.subdir}"
+    )
     # if cfg.debug:
     #     log.setLevel(logging.DEBUG)
     # else:
     #     log.setLevel(logging.WARN)
     log.info(OmegaConf.to_yaml(cfg, resolve=False))
-    log.info(f"STARTING process ID {os.getpid()}.\n\tClassifier: {cfg.pipeline.classifier._target_}.\n\tUsing:\n\t\t{cfg.pipeline.resamplers.keys()}\n\t\t{cfg.pipeline.postresample_transformers.keys()}.\n\tSeed: {cfg.global_rng.seed}\n\tEnvironment: {submitit.JobEnvironment()}")
+    # log.info(
+    #     f"STARTING process ID {os.getpid()}."
+    #     f"\n\tClassifier: {cfg.pipeline.classifier._target_}."
+    #     "\n\tUsing:"
+    #     f"\n\t\t{cfg.pipeline.resamplers.keys()}"
+    #     f"\n\t\t{cfg.pipeline.postresample_transformers.keys()}."
+    #     f"\n\tSeed: {cfg.global_rng.seed}\n\tEnvironment: {submitit.JobEnvironment()}"
+    # )
+    # log.info(
+    #     f"STARTING process ID {os.getpid()}.\n\tClassifier: {cfg.pipeline.classifier._target_}.\n\tUsing:\n\t\t{cfg.pipeline.resamplers.keys()}\n\t\t{cfg.pipeline.postresample_transformers.keys()}.\n\tSeed: {cfg.global_rng.seed}\n\tEnvironment: {submitit.JobEnvironment()}"
+    # )
+    log.info(
+        f"""STARTING process ID {os.getpid()}.
+            \n\tClassifier: {cfg.pipeline.classifier._target_}.
+            \n\tUsing:
+            \n\t\t{cfg.pipeline.resamplers.keys()}.
+            \n\t\t{cfg.pipeline.postresample_transformers.keys()}.
+            \n\tSeed: {cfg.global_rng.seed}.
+            \n\tEnvironment: {submitit.JobEnvironment()}"""
+    )
     # log.debug(OmegaConf.to_yaml(cfg, resolve=False))
     # log.debug(OmegaConf.to_yaml(cfg, resolve=True))
     cfg = setup_rng(cfg)
@@ -246,12 +274,20 @@ def main(cfg: DictConfig) -> None:
             pipeline_cfg.model_save_path
         )
     elif isinstance(pipeline_cfg, BaseEstimator):  # TODO
-        log.critical("Presently, directly instantiated pipelines must already be fitted")
+        log.critical(
+            "Presently, directly instantiated pipelines must already be fitted"
+        )
         sys.exit()
     else:
         # do training
         log.info("Training.")
-        train(pipeline_cfg=pipeline_cfg, ds=ds, n_splits=cfg.n_splits, results_file=cfg.get(CFG_RESULTS_FILE))
+        train(
+            pipeline_cfg=pipeline_cfg,
+            ds=ds,
+            n_splits=cfg.n_splits,
+            results_file=cfg.get(CFG_RESULTS_FILE),
+        )
+
 
 if __name__ == "__main__":
     main()

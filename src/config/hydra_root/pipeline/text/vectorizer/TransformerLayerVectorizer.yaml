@@ -2,4 +2,5 @@ defaults:
   - layers_to_combine: last4
   - _self_
 _target_: pipeline_transformers.TransformerLayerVectorizer
-language_model: "xlm-roberta-base"
+# language_model: ???
+# language_model: "xlm-roberta-base"

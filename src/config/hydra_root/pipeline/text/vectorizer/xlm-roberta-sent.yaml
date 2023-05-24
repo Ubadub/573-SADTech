@@ -1,0 +1,5 @@
+defaults:
+  - TransformerLayerVectorizer
+  - _self_
+language_model: cardiffnlp/twitter-xlm-roberta-base-sentiment
+model_max_length: 512

@@ -31,7 +31,8 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
         # layer_combiner: Callable[
         #     [Sequence[ArrayLike]], NDArray
         # ] = lambda x: np.concatenate(x, axis=1),
-        model_max_length: Optional[int] = None,
+        model_max_length: int = 512,
+        # model_max_length: Optional[int] = None,
     ):
         """Constructor.
 
@@ -100,16 +101,17 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
         self._lm: PreTrainedModel = AutoModel.from_pretrained(language_model)
         self._lm_kwargs: dict = {"output_hidden_states": True}
 
-        if model_max_length is None:
-            model_max_length = getattr(
-                self._lm.config, "max_position_embeddings", VERY_LARGE_INTEGER
-            )
+        # if model_max_length is None:
+        #     model_max_length = getattr(
+        #         self._lm.config, "max_position_embeddings", VERY_LARGE_INTEGER
+        #     )
 
+        self.model_max_length = model_max_length
         self._tokenizer: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
             language_model,
-            model_max_length=model_max_length,
+            model_max_length=self.model_max_length,
         )
-        self.model_max_length = self._tokenizer.model_max_length
+        # self.model_max_length = self._tokenizer.max_len_single_sentence
         # tokenizer_max_model_length = self._tokenizer.max_model_input_sizes.get(lm_name_or_path)
         # self._model_max_length = self._lm.config.max_position_embeddings
         # max_position_embeddings = getattr(self._lm.config, "max_position_embeddings", None)
@@ -126,10 +128,11 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
     def _tokenize_docs(self, docs) -> BatchEncoding:
         return self._tokenizer(
             list(docs),
+            is_split_into_words=False,
+            # max_length=self.model_max_length,
+            padding=True,
             return_tensors="pt",
             truncation=True,
-            padding=True,
-            is_split_into_words=False,
         )
 
     def _model_outputs(self, docs) -> ModelOutput:

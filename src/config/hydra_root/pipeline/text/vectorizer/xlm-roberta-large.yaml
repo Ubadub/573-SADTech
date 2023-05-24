@@ -1,0 +1,6 @@
+defaults:
+  - TransformerLayerVectorizer
+  - override layers_to_combine: last8
+  - _self_
+language_model: xlm-roberta-large
+model_max_length: 512

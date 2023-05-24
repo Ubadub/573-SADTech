@@ -1,23 +1,52 @@
+from functools import wraps
+import os
 import re
-from typing import Any
+from typing import Any, Callable, ParamSpec, TypeVar
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
+T = TypeVar("T")
+P = ParamSpec("P")
+
+ITEM_SEP = r","
 KV_SEP = r"="
-ITEM_SEP = r"/"
+
+
+def exception_handler(
+    exception_action: Callable[[Exception], Any]
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def decorator(wrapped_func: Callable[P, T]) -> Callable[P, T]:
+        @wraps(wrapped_func)
+        def _(*args: P.args, **kwargs: P.kwargs) -> T:
+            try:
+                return wrapped_func(*args, **kwargs)
+            except Exception as e:
+                exception_action(e)
+                raise e
+
+        return _
+
+    return decorator
+
+
+slash2under = lambda x: x.replace(os.sep, "_")
+
 
 def clean_path(path: str) -> str:
     matches = re.findall(f"{KV_SEP}(.*?)(?:{ITEM_SEP}|$)", path)
     if matches:
-        return ITEM_SEP.join(matches)
+        return os.sep.join([slash2under(_) for _ in matches])
     else:
-        return path
+        return slash2under(path)
+
 
 OmegaConf.register_new_resolver("clean_path", clean_path)
+OmegaConf.register_new_resolver("slash2under", slash2under)
 # OmegaConf.register_new_resolver("clean_path", lambda x: x.split("=")[-1] if "=" in x else x)
 
 OmegaConf.register_new_resolver("ref", lambda x: f"${{ref:{x}}}")
+
 
 def resolve_conf_crossrefs(conf):
     """Resolve references between objects, such that they are not instatiated multiple times.
@@ -25,6 +54,7 @@ def resolve_conf_crossrefs(conf):
     conf = OmegaConf.to_container(conf)
     resolved_dict = _resolve_obj_ref(conf, conf, conf)
     return DictConfig(resolved_dict, flags={"allow_objects": True})
+
 
 def _resolve_obj_ref(conf, root, parent):
     if isinstance(conf, dict):
@@ -36,6 +66,7 @@ def _resolve_obj_ref(conf, root, parent):
         return __resolve_obj_ref(key, root, parent)
     else:
         return conf
+
 
 def __resolve_obj_ref(v: str, root: dict, parent: dict) -> Any:
     parts = v.split(".")
@@ -49,9 +80,9 @@ def __resolve_obj_ref(v: str, root: dict, parent: dict) -> Any:
             return conf
     return v
 
+
 def setup_rng(cfg: DictConfig) -> DictConfig:
     cfg._set_flag("allow_objects", True)
     # cfg = DictConfig(cfg, flags={"allow_objects": True})
     cfg.global_rng = hydra.utils.instantiate(cfg.global_rng)
     return resolve_conf_crossrefs(cfg)
-

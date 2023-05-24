@@ -1,6 +1,5 @@
 defaults:
-  - text:
-    - vectorizer/TransformerLayerVectorizer
+  - text/vectorizer: TransformerLayerVectorizer
   # - /classifiers@classifier: rf
   - _self_
 text:
