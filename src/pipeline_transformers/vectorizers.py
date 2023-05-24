@@ -24,8 +24,8 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        language_model: str,
-        layers_to_combine: Sequence[int],
+        language_model: str = "xlm-roberta-base",
+        layers_to_combine: Sequence[int] = [-1, -2, -3, -4],
         # combination_strategy: Optional[str]="concatenate",
         layer_combiner: Callable[[Sequence[ArrayLike]], NDArray] = np.hstack,
         # layer_combiner: Callable[
