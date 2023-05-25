@@ -149,7 +149,7 @@ class TFIDF:
 class DocumentEmbeddings(BaseEstimator, TransformerMixin):
     def __init__(
         self,
-        language_model: str,
+        language_model: str = "xlm-roberta-base",
         tfidf_weighted: bool = True,
     ) -> None:
         """
