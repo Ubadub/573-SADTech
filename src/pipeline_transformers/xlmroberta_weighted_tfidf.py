@@ -165,9 +165,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         self.language_model = language_model
         self.tfidf_weighted = tfidf_weighted
 
-        # pretrained model
-        self.tokenizer = AutoTokenizer.from_pretrained(self.language_model)
-        self.model = AutoModel.from_pretrained(self.language_model)
 
     def _tokenize_example(self, example: str) -> list[int]:
         """
@@ -184,7 +181,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         window_size = 500
         for i in range(0, example_len, window_size):
             end = i + window_size if i + window_size < example_len else example_len
-            cur_tokens = self.tokenizer(
+            cur_tokens = self.tokenizer_(
                 example[i:end],
                 truncation=False,
                 return_attention_mask=False,
@@ -205,8 +202,12 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         Returns:
             - self: an instance of itself to be saved for later use
         """
+        # pretrained model
+        self.tokenizer_ = AutoTokenizer.from_pretrained(self.language_model)
+        self.model_ = AutoModel.from_pretrained(self.language_model)
+
         token_ids = [self._tokenize_example(example) for example in X]
-        tokens = [self.tokenizer.convert_ids_to_tokens(ids) for ids in token_ids]
+        tokens = [self.tokenizer_.convert_ids_to_tokens(ids) for ids in token_ids]
 
         self.tfidf_ = TFIDF(tokens)
 
@@ -228,7 +229,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         """
         token_ids = [self._tokenize_example(example) for example in X]
 
-        word_embeddings = self.model.embeddings.word_embeddings.weight
+        word_embeddings = self.model_.embeddings.word_embeddings.weight
 
         vectors = [
             self._vectorize(
@@ -292,7 +293,7 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
                 representing a document vector
         """
         num_tokens, embedding_size = word_embeddings.size()
-        tokens = self.tokenizer.convert_ids_to_tokens(input_ids)
+        tokens = self.tokenizer_.convert_ids_to_tokens(input_ids)
         document_embedding = np.zeros(embedding_size)
 
         for i in range(num_tokens):
