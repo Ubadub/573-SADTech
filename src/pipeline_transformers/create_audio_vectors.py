@@ -15,7 +15,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from transformers import (
     Wav2Vec2FeatureExtractor,
     ClapFeatureExtractor,
-)  # , MCTCTFeatureExtractor
+    MCTCTFeatureExtractor
+)
 
 
 class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
@@ -79,7 +80,6 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         )["input_features"]
         return inputs
 
-    # Needs torchaudio library
     @staticmethod
     def get_mctct_features(audio_array: list[np.ndarray]) -> np.ndarray:
         """
@@ -113,8 +113,8 @@ def main():
     # print(audio_array)
 
     # vectors = AudioFeatureExtractor.get_wav2vec2_features(audio_array)
-    # vectors = get_clap_features(audio_array)
-    # vectors = get_mctct_features(audio_array)
+    # vectors = AudioFeatureExtractor.get_clap_features(audio_array)
+    # vectors = AudioFeatureExtractor.get_mctct_features(audio_array)
 
     # print(vectors)
 
