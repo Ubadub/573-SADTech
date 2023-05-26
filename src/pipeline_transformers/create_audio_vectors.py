@@ -127,12 +127,12 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         )
 
         # create the Tokenizer
-        tokenizer = Wav2Vec2CTCTokenizer(
-            vocab_file=self.vocab_file_path_,
-            unk_token=UNK,
-            pad_token=PAD,
-            word_delimiter_token="|"
-        )
+        # tokenizer = Wav2Vec2CTCTokenizer(
+        #     vocab_file=self.vocab_file_path_,
+        #     unk_token=UNK,
+        #     pad_token=PAD,
+        #     word_delimiter_token="|"
+        # )
 
         # create the Feature Extractor
         feature_extractor = Wav2Vec2FeatureExtractor(
@@ -144,10 +144,10 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         )
 
         # wrap the tokenizer and feature extractor in a Processor for convenience
-        processor = Wav2Vec2Processor(
-            feature_extractor=feature_extractor,
-            tokenizer=tokenizer
-        )
+        # processor = Wav2Vec2Processor(
+        #     feature_extractor=feature_extractor,
+        #     tokenizer=tokenizer
+        # )
 
         inputs = processor(
             audio_array[0],  # get the first one for testing purposes
@@ -159,9 +159,9 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
 
 
         # grab inputs from the data
-        # inputs = feature_extractor(
-        #     audio_array, return_tensors="pt", sampling_rate=16000, padding=True
-        # )
+        inputs = feature_extractor(
+            audio_array, return_tensors="pt", sampling_rate=16000, padding=True
+        )
 
 
         print("inputs", inputs)
@@ -183,7 +183,7 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
 
         print("vectors after forward", list(last_hidden_states.shape))
 
-        error here pls
+        asdf
 
         return inputs
     
