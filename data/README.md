@@ -4,31 +4,21 @@
 ```
   data/
     mal/
-      audio/
-        MAL_MSA_01.txt
-        ...
-        MAL_MSA_70.txt
-      text/
-        MAL_MSA_01.txt
-        ...
-        MAL_MSA_70.txt
-      video/
-        MAL_MSA_01.txt
-        ...
-        MAL_MSA_70.txt
-      labels.tsv
+      all.csv
+      dev.csv
+      train.csv
+    mal_dev_data/
+      Mal_dev.tsv
+      Mal_dev.xlsx
+    mal_train_data/
+      Mal_train.tsv
+      Mal_train.xlsx
     tam/
-      audio/
-        TAM_MSA_01.txt
-        ...
-        TAM_MSA_64.txt
-      text/
-        TAM_MSA_01.txt
-        ...
-        TAM_MSA_64.txt
-      video/
-        TAM_MSA_01.txt
-        ...
-        TAM_MSA_64.txt
-      labels.tsv
+      all.csv
+      dev.csv
+      train.csv
+    tam_dev_data/
+      TAM_dev.tsv
+    tam_train_data/
+      TAM_train.tsv
 ```
