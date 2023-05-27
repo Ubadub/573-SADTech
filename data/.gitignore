@@ -1,4 +1,11 @@
 */audio/*
 */text/*
 */video/*
+<<<<<<< HEAD
 */*dataset_dict/
+=======
+*/*dataset_dict*/
+
+test_data/
+train_data/
+>>>>>>> main

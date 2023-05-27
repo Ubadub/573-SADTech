@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Base script for updating or creating the conda environments for use with this project.
+# Usage: env_install+update.sh [-p </environment/prefix/path> | -n <environment_name>] (<path/to/environment.yml>)
 
 # -e: immediately exit if any program errors while running the script
 # -u: prohibit undefined variables
@@ -17,7 +18,6 @@ conda_env_exists_name(){
     conda env list | grep -P "^${@}\s" >/dev/null 2>/dev/null
 }
 
-#if [[ $# -gt 3  ]]
 if [[ $# -gt 3 || $# -lt 2 ]] || [[ $1 != "-p" && $1 != "-n" ]]
 then
     echo "Usage: env_install+update.sh [-p </environment/prefix/path> | -n <environment_name>] (<path/to/environment.yml>)"
@@ -71,20 +71,11 @@ if ! $ENV_CHECK $ENV_ID
 then
     echo "Conda environment does not exist. Creating environment at $ENV_ID."
     echo "Creating with command conda create $ENV_ID_ARGS --strict-channel-priority --yes"
-    # conda create $ENV_ID_ARGS --strict-channel-priority --yes
+    conda create $ENV_ID_ARGS --strict-channel-priority --yes
 else
     echo "Conda environment exists. Proceeding with update."
 fi
 
-# if ! conda_env_exists_name $ENV_NAME
-# then
-#     echo "Conda environment does not exist. Creating environment at $ENV_NAME."
-#     conda create -n $ENV_NAME --strict-channel-priority --yes
-# else
-#     echo "Conda environment exists. Proceeding with update."
-# fi
-
-# if ! conda_env_exists_name $ENV_NAME 
 if ! $ENV_CHECK $ENV_ID # check it was created successfully above
 then
     echo "Failed to create Conda environment. Aborting."
