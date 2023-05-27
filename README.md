@@ -7,7 +7,7 @@
   1. Tara Wueger (taraw28)
 
 ## D3 Run Instructions
-  1. Download data/ and outputs/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY), merging them with the same directories from this repo (it is fine to overwrite any files if asked, but the merging strategy should ensure tthat every file in at least one of the two locations(repo and Drive) appears in your local folder). The structure of the data/ directory should look like:
+  1. Download data/ and outputs/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY), merging them with the same directories from this repo (it is fine to overwrite any files if asked, but the merging strategy should ensure that every file in at least one of the two locations(repo and Drive) appears in your local folder). The structure of the data/ directory should look like:
   ```
     data/
       mal/

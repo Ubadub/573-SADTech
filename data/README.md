@@ -1,24 +1,42 @@
 # Data
 
-## Directory Structure:
+## Directory Structure (after copying data from Google Drive):
 ```
   data/
     mal/
+      audio/
+        MAL_MSA_01.mp3
+        ...
+        MAL_MSA_70.mp3
+      text/
+        MAL_MSA_01.txt
+        ...
+        MAL_MSA_70.txt
+      video/
+        MAL_MSA_01.mp4
+        ...
+        MAL_MSA_70.mp4
       all.csv
       dev.csv
       train.csv
-    mal_dev_data/
-      Mal_dev.tsv
-      Mal_dev.xlsx
-    mal_train_data/
-      Mal_train.tsv
-      Mal_train.xlsx
+      train_dataset_dict/
+        ...
     tam/
+      audio/
+        TAM_MSA_01.mp3
+        ...
+        TAM_MSA_64.mp3
+      text/
+        TAM_MSA_01.txt
+        ...
+        TAM_MSA_64.txt
+      video/
+        TAM_MSA_01.mp4
+        ...
+        TAM_MSA_64.mp4
       all.csv
       dev.csv
       train.csv
-    tam_dev_data/
-      TAM_dev.tsv
-    tam_train_data/
-      TAM_train.tsv
+      train_dataset_dict/
+        ...
 ```
