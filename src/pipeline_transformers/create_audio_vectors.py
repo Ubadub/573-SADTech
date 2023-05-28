@@ -14,8 +14,11 @@ import os
 from typing import Optional, Sequence, Union
 
 import datasets
-from datasets.features import Audio
+
+# from datasets import Audio, Dataset, DatasetDict, load_from_disk
+# from datasets.features import Audio
 import numpy as np
+from numpy.typing import NDArray
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 import torch
@@ -23,6 +26,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from transformers import (
     AutoModel,
     AutoProcessor,
+    MCTCTProcessor,
     PreTrainedModel,
     ProcessorMixin,
 )
@@ -52,10 +56,15 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
 
         assert 0 < batch_size, "batch_size must be a positive float or int"
 
-        # if type(batch_size) == float:
-        #     assert 0 < batch_size and batch_size <= 1.0, "Float batch size must be in range (0, 1]"
-
         self.batch_size = batch_size
+
+        log.debug(
+            f"Created AudioFeatureExtractor with:\n"
+            f"\t\tmodel_path: {self.model_path}\n"
+            f"\t\tlayers_to_combine: {self.layers_to_combine}\n"
+            f"\t\tbatch_size: {self.batch_size}\n"
+            f"\t\tdevice: {self.device}\n"
+        )
 
     def _log_memory(self, header: str = None):
         if header:
@@ -64,17 +73,31 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         log.debug(f"Cached: {round(torch.cuda.memory_reserved(0)/1024**3, 1)} GB")
 
     def fit(self, X, y=None):
+        log.debug("Fitting.")
         self.model_: PreTrainedModel = AutoModel.from_pretrained(self.model_path)
-        self.processor_: ProcessorMixin = AutoProcessor.from_pretrained(self.model_path)
-        self._converter = Audio(
+        if "mctct" in self.model_.config.model_type:  # workaround
+            log.debug("MCTCT model; using MCTCTProcessor instead of AutoProcessor.")
+            self.processor_: ProcessorMixin = MCTCTProcessor.from_pretrained(
+                self.model_path
+            )
+        else:
+            self.processor_: ProcessorMixin = AutoProcessor.from_pretrained(
+                self.model_path
+            )
+        self._converter = datasets.Audio(
             sampling_rate=self.processor_.feature_extractor.sampling_rate
         )
+        if getattr(self.model_.config, "is_encoder_decoder", False):
+            log.debug("Model is encoder-decoder; saving encoder only.")
+            self.model_ = self.model_.encoder
+
         return self
 
     def transform(self, X, y=None):
         """
         X should consist of a column of dictionaries with the key "bytes"
         """
+        log.debug("Transforming.")
         self.model_.to(self.device)
         X = [self._converter.decode_example(x)["array"] for x in X]
 
@@ -93,29 +116,22 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         Params:
             - audio_array: Sequence of array representations of audio files
 
-        Creates and returns wav2vec2 feature vectors for each audio array.
-        From: https://huggingface.co/docs/transformers/v4.28.1/en/model_doc/wav2vec2#transformers.Wav2Vec2FeatureExtractor
+        Creates and returns feature vectors for each audio array.
         """
         num_samples = len(audio_array)
         if type(self.batch_size) == float and self.batch_size <= 1.0:
             eff_batch_size = max(
                 1, int(self.batch_size * num_samples)
-            )  # max(1, int(1.0/self.batch_size))
+            )
         elif type(self.batch_size) == int:
             eff_batch_size = self.batch_size
         log.info(
-            f"Beginning feature extraction using model {self.model_path} with effective batch size {eff_batch_size}"
+            f"Beginning feature extraction using model {self.model_path}"
+            f"with effective batch size {eff_batch_size}"
         )
 
         log.debug(f"Total samples: {num_samples}")
-        # batch_starts = range(0, num_samples, eff_batch_size)
-        # batch_ends = itertools.chain(batch_starts[1:], [num_samples])
 
-        # combined_layers = []
-        # for batch_start, batch_end in np.array_split(range(num_samples), max(int(num_samples/eff_batch_size), 1))
-        # log.debug(f"Processing batch from {batch_start} to {batch_end-1}")
-
-        # batch = audio_array[batch_start:batch_end]
         inputs = self.processor_(
             # audio_array[0],  # get the first one for testing purposes
             # batch,
@@ -123,11 +139,9 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             sampling_rate=self._converter.sampling_rate,
             padding=True,
             return_tensors="pt",
-        )  # .to(self.device)
+        ) # We don' move this to GPU yet because the dataloader copies it
 
         inputs_keys, inputs_vals = zip(*inputs.items())
-        # collate_fn = lambda batch: {keys[i]: batch[i] for i in range(len(batch))}
-
         inputs_tds = TensorDataset(*inputs_vals)
         loader = DataLoader(inputs_tds, batch_size=eff_batch_size)
 
@@ -138,15 +152,10 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
 
         for batch_idx, batch in enumerate(loader):
             log.info(f"Processing batch {batch_idx}.")
-            if "cuda" in self.device:
+            if "cuda" in self.device: # memory management
                 torch.cuda.empty_cache()
-            # log.info(f"Processing batch {batch_idx} of size {len(batch)}")
-            # for tnsr in batch:
-            #     tnsr.to(self.device)
+            log.info(f"Processing batch {batch_idx} of size {len(batch)}")
             input_batch = dict(zip(inputs_keys, [_.to(self.device) for _ in batch]))
-
-            # for k, v in input_batch.items():
-            #     log.debug(f"Tensor type: {type(v)}")
 
             if "cuda" in self.device:
                 self._log_memory("Batch Start - Memory Usage:")
@@ -168,6 +177,7 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             log.debug(f"batch_features shape: {batch_features.shape}")
             all_features.append(batch_features)
 
+            # Some memory management
             del outputs
             for tnsr in input_batch.values():
                 tnsr.cpu()
@@ -185,6 +195,24 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         return concatenated_feats
 
 
+def add_feat_col(col_name: str, feat_vectors: NDArray):
+    """
+    Args:
+        col_name: Column name for the features to add to the Dataset
+        feat_vectors: NDArray of shape [dataset_length, embedding_dim]
+    Returns:
+        A function that accepts a row and its index and adds to the provided row the
+        corresponding feaure row in feas
+    """
+
+    def _(r, idx):
+        to_add = feat_vectors[idx]
+        r[col_name] = to_add
+        return r
+
+    return _
+
+
 def main():
     logging.basicConfig()
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:10240"
@@ -193,7 +221,15 @@ def main():
         description="Create vectors from the audio files in the given language's dataset.",
     )
     parser.add_argument("-d", "--dataset", required=True)
-    parser.add_argument("-m", "--model_path", required=False)
+    parser.add_argument(
+        "-c",
+        "--layers_to_combine",
+        nargs="*",
+        default=[-1, -2, -3, -4],
+        required=False,
+        type=int,
+    )
+    parser.add_argument("-m", "--model_paths", nargs="+", required=True)
     parser.add_argument(
         "-l",
         "--logging_level",
@@ -201,6 +237,7 @@ def main():
         default="WARNING",
         choices=logging._nameToLevel.keys(),
     )
+    parser.add_argument("-o", "--output", required=True)
 
     def int_or_float(s):
         if "." in s:
@@ -216,59 +253,90 @@ def main():
     args = parser.parse_args()
 
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(args.dataset)
-    model_path: str = args.model_path
-
-    # logging.basicConfig(level=args.logging_level.upper())
-    # log = logging.getLogger(__name__)
 
     log.setLevel(args.logging_level.upper())
+
+    os.makedirs(args.output, exist_ok=True)
+
     extractor_kwargs = vars(args)
-    # extractor_kwargs.pop("dataset")
     extractor_kwargs = {
         k: v
         for k, v in extractor_kwargs.items()
-        if k not in ("dataset", "logging_level") and v is not None
+        if k not in ("dataset", "logging_level", "model_paths", "output")
+        and v is not None
     }
 
-    audio_df: pd.Series = ds_dict["train"].to_pandas()["audio"]
+    new_ds_dict_builder: [str, datasets.Dataset] = {}
 
-    audio_vectors = (
-        AudioFeatureExtractor(**extractor_kwargs)
-        .fit(X=audio_df)
-        .transform(X=audio_df)
-        # AudioFeatureExtractor(**({"model_path": model_path} if args.model_path else {}))
-    )
-    # if lang == "mal":
-    #     # to test Wav2Vec2 vectorizer
-    #     # audio_vectors = AudioFeatureExtractor(model="gvs/wav2vec2-large-xlsr-malayalam").fit(X=audio_df)
+    for split in ds_dict:
+        log.info(f"Processing split {split}.")
+        ds: datasets.Dataset = ds_dict[split]
+        ds_format = ds.format
+        existing_format_columns = (
+            ds_format.get("columns", []) if ds_format.get("type", "") == "numpy" else []
+        )
+        # ds: datasets.Dataset = ds_dict[split].select(range(2))  # for testing
 
-    #     # to test Whisper vectorizer
-    #     # DrishtiSharma/whisper-large-v2-malayalam
-    #     audio_vectors = AudioFeatureExtractor(
-    #         model="DrishtiSharma/whisper-large-v2-malayalam"
-    #     ).fit(X=audio_df)
-    # else:
-    #     # to test Wav2Vec2 vectorizer
-    #     audio_vectors = AudioFeatureExtractor(
-    #         model="Amrrs/wav2vec2-large-xlsr-53-tamil"
-    #     ).fit(X=audio_df)
+        # audio_df: pd.Series = ds.to_pandas().iloc[0:2]["audio"] # alternate for testing
+        audio_df: pd.Series = ds.to_pandas()["audio"]
 
-    #     # to test Whisper vectorizer
-    #     audio_vectors = AudioFeatureExtractor(
-    #         model="vasista22/whisper-tamil-small"
-    #     ).fit(X=audio_df)
+        col_names = [
+            f"{model_path}_{args.layers_to_combine}" for model_path in args.model_paths
+        ]
 
-    # to test MCTCT vectorizer
-    # audio_vectors = AudioFeatureExtractor(
-    #     strategy="mctct",
-    #     model="speechbrain/m-ctc-t-large"
-    # ).fit(X=audio_df)
+        for idx, (model_path, col_name) in enumerate(zip(args.model_paths, col_names)):
+            log.debug(f"Processing model {model_path}, using column name {col_name}")
+            # extractor = AudioFeatureExtractor(**extractor_kwargs)
+            audio_vectors: NDArray = (  # shape [dataset_length, hidden_dim]
+                AudioFeatureExtractor(model_path=model_path, **extractor_kwargs)
+                .fit(X=audio_df)
+                .transform(X=audio_df)
+            )
 
-    # vectors = audio_vectors.transform(X=audio_df)
+            log.debug(f"Vectors:\n{audio_vectors}")
+            log.info(
+                f"Created vector embedding with shape: {audio_vectors.shape}"
+            )
 
-    log.debug(f"Vectors:\n{audio_vectors}")
-    log.debug(f"Vector shape: {audio_vectors.shape}")  # [batch_size, hidden_dim]
+            new_feats = ds.features.copy()
+            new_feats[col_name] = datasets.Sequence(
+                datasets.Value(str(audio_vectors.dtype))
+            )
+            log.debug(f"New features:\n{new_feats}")
+            ds = ds.map(
+                add_feat_col(col_name=col_name, feat_vectors=audio_vectors),
+                features=new_feats,
+                with_indices=True,
+            )
+            log.debug(f"Updated ds for split {split}:\n{ds}")
 
+            new_ds_dict_builder[split] = ds
+            new_ds_dict: datasets.DatasetDict = datasets.DatasetDict(
+                new_ds_dict_builder
+            )
+            columns_to_format = list(
+                set(col_names[: idx + 1] + existing_format_columns)
+            )
+            new_ds_dict.set_format(
+                type="numpy",
+                columns=columns_to_format,
+                output_all_columns=True,
+            )
+            log.debug(
+                f"Reformatted columns {columns_to_format} to numpy."
+            )
+
+            new_ds_dict.save_to_disk(args.output)
+            log.info(f"Saved dataset to {args.output}:\n{new_ds_dict}")
+
+    # Model list
+    # Malayalam:
+    #     gvs/wav2vec2-large-xlsr-malayalam
+    #     DrishtiSharma/whisper-large-v2-malayalam
+    # Tamil:
+    #     Amrrs/wav2vec2-large-xlsr-53-tamil
+    #     vasista22/whisper-tamil-small
+    #     speechbrain/m-ctc-t-large
 
 if __name__ == "__main__":
     main()
