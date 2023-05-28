@@ -120,9 +120,7 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         """
         num_samples = len(audio_array)
         if type(self.batch_size) == float and self.batch_size <= 1.0:
-            eff_batch_size = max(
-                1, int(self.batch_size * num_samples)
-            )
+            eff_batch_size = max(1, int(self.batch_size * num_samples))
         elif type(self.batch_size) == int:
             eff_batch_size = self.batch_size
         log.info(
@@ -139,7 +137,7 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             sampling_rate=self._converter.sampling_rate,
             padding=True,
             return_tensors="pt",
-        ) # We don' move this to GPU yet because the dataloader copies it
+        )  # We don't move this to GPU yet because the dataloader copies it
 
         inputs_keys, inputs_vals = zip(*inputs.items())
         inputs_tds = TensorDataset(*inputs_vals)
@@ -152,7 +150,7 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
 
         for batch_idx, batch in enumerate(loader):
             log.info(f"Processing batch {batch_idx}.")
-            if "cuda" in self.device: # memory management
+            if "cuda" in self.device:  # memory management
                 torch.cuda.empty_cache()
             log.info(f"Processing batch {batch_idx} of size {len(batch)}")
             input_batch = dict(zip(inputs_keys, [_.to(self.device) for _ in batch]))
@@ -294,9 +292,7 @@ def main():
             )
 
             log.debug(f"Vectors:\n{audio_vectors}")
-            log.info(
-                f"Created vector embedding with shape: {audio_vectors.shape}"
-            )
+            log.info(f"Created vector embedding with shape: {audio_vectors.shape}")
 
             new_feats = ds.features.copy()
             new_feats[col_name] = datasets.Sequence(
@@ -322,9 +318,7 @@ def main():
                 columns=columns_to_format,
                 output_all_columns=True,
             )
-            log.debug(
-                f"Reformatted columns {columns_to_format} to numpy."
-            )
+            log.debug(f"Reformatted columns {columns_to_format} to numpy.")
 
             new_ds_dict.save_to_disk(args.output)
             log.info(f"Saved dataset to {args.output}:\n{new_ds_dict}")
@@ -337,6 +331,7 @@ def main():
     #     Amrrs/wav2vec2-large-xlsr-53-tamil
     #     vasista22/whisper-tamil-small
     #     speechbrain/m-ctc-t-large
+
 
 if __name__ == "__main__":
     main()
