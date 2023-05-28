@@ -21,7 +21,7 @@ from transformers import (
     MCTCTProcessor,
     MCTCTModel,
     WhisperProcessor,
-    WhisperModel
+    WhisperModel,
 )
 
 
@@ -38,19 +38,17 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-            self,
-            strategy: str = "wav2vec2",
-            model: Optional[str] = "Amrrs/wav2vec2-large-xlsr-53-tamil",
-            layers_to_combine: Sequence[int] = [-1, -2, -3, -4]
+        self,
+        strategy: str = "wav2vec2",
+        model: Optional[str] = "Amrrs/wav2vec2-large-xlsr-53-tamil",
+        layers_to_combine: Sequence[int] = [-1, -2, -3, -4],
     ):
         self.strategy = strategy
         self.model = model
         self.layers_to_combine = layers_to_combine
 
-
     def fit(self, X, y=None):
         return self
-
 
     def transform(self, X, y=None):
         converter = Audio(sampling_rate=16000)
@@ -66,8 +64,10 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             processor = MCTCTProcessor.from_pretrained(self.model)
             model = MCTCTModel.from_pretrained(self.model)
         else:
-            raise ValueError(f"Hello, pls pass in known vectorization strategy, either \
-                             'Wav2Vec', 'mctct' or 'whisper'. Instead got {self.strategy}")
+            raise ValueError(
+                f"Hello, pls pass in known vectorization strategy, either \
+                             'Wav2Vec', 'mctct' or 'whisper'. Instead got {self.strategy}"
+            )
 
         return self.get_features(
             processor=processor,
@@ -75,11 +75,12 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             audio_array=X,
         )
 
-
-    def get_features(self,
-                     processor: ProcessorMixin,
-                     model: torch.nn.Module,
-                     audio_array: list[np.ndarray]) -> np.ndarray:
+    def get_features(
+        self,
+        processor: ProcessorMixin,
+        model: torch.nn.Module,
+        audio_array: list[np.ndarray],
+    ) -> np.ndarray:
         """
         Params:
             - audio_array: list of arrays representations of audio files
@@ -92,7 +93,7 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             # audio_array,
             sampling_rate=16000,
             padding=True,
-            return_tensors="pt"
+            return_tensors="pt",
         )
 
         with torch.no_grad():
@@ -131,13 +132,19 @@ def main():
 
         # to test Whisper vectorizer
         # DrishtiSharma/whisper-large-v2-malayalam
-        audio_vectors = AudioFeatureExtractor(model="DrishtiSharma/whisper-large-v2-malayalam").fit(X=pd_audio)
+        audio_vectors = AudioFeatureExtractor(
+            model="DrishtiSharma/whisper-large-v2-malayalam"
+        ).fit(X=pd_audio)
     else:
         # to test Wav2Vec2 vectorizer
-        audio_vectors = AudioFeatureExtractor(model="Amrrs/wav2vec2-large-xlsr-53-tamil").fit(X=pd_audio)
+        audio_vectors = AudioFeatureExtractor(
+            model="Amrrs/wav2vec2-large-xlsr-53-tamil"
+        ).fit(X=pd_audio)
 
         # to test Whisper vectorizer
-        audio_vectors = AudioFeatureExtractor(model="vasista22/whisper-tamil-small").fit(X=pd_audio)
+        audio_vectors = AudioFeatureExtractor(
+            model="vasista22/whisper-tamil-small"
+        ).fit(X=pd_audio)
 
     # to test MCTCT vectorizer
     # audio_vectors = AudioFeatureExtractor(
