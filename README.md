@@ -6,7 +6,7 @@
   1. Sam Briggs (briggs3)
   1. Tara Wueger (taraw28)
 
-## D3 Run Instructions
+## D4 Run Instructions
   1. Download data/ and outputs/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY), merging them with the same directories from this repo (it is fine to overwrite any files if asked, but the merging strategy should ensure that every file in at least one of the two locations(repo and Drive) appears in your local folder). The structure of the data/ directory should look like:
   ```
     data/
@@ -50,7 +50,7 @@
   The outputs/ directory should look like:
   ```
     outputs/
-      D3/
+      D4/
         mal/
           transformer_model/
             ...
@@ -70,14 +70,15 @@
   ```
   Note: You might need to merge the `outputs/` folder downloaded from Google Drive with the `outputs/` folder in the git repository.
   
-  2. For condor: Run `condor_submit D3.cmd` from root directory of our repo (ensuring you have Anaconda or Miniconda installed)
+  2. For condor: Run `condor_submit D4.cmd` from root directory of our repo (ensuring you have Anaconda or Miniconda installed)
   3. For local:
     - Install the conda environment following the instructions below, under "Development & Contribution Guidelines" >> "Local Development Setup".
     - Edit the Anaconda paths on lines 4, 5, as appropriate.
-    - Then, run `./src/d3_run.sh` from the root directory of our repo.
+    - Then, run `./src/d4_run.sh` from the root directory of our repo.
 
 ## Shared Task Description
-TODO
+
+We are participating in the "Multimodal Abusive Language Detection and Sentiment Analysis: DravidianLangTech@RANLP 2023" shared task hosted on CodaLab. This shared task has two subtasks: abusive language detection in Tamil, and sentiment analysis in both Tamil and Malayalam (members of the Dravidian language family). Both tasks are multimodal, consisting of videos paired with files containing just their audio tracks as well as (sometimes partial) text transcripts. For the purposes of this class, we will be working on the second subtask of sentiment analysis in Tamil and Malayalam. Our task is to categorize text written in either Tamil or Malayalam into 5 different categories: Highly Negative, Negative, Neutral, Positive, or Highly Positive. The data is ordinal, that is, the categories are discrete and there exists a total order over them, but the distances between the categories are taken to be unknown or not well-defined.
 
 ## Development & Contribution Guidelines
 
