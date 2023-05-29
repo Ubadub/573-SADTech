@@ -189,5 +189,42 @@ without specifying an explicit version string, it won't be included with the `--
 
 ## Directory Structure
 
-[WIP]
-
+```
+573-SADTech
+├── condor_output
+│   ├── D2
+│   └── D3
+├── data
+│   ├── mal
+│   ├── mal_dev_data
+│   ├── mal_train_data
+│   ├── tam
+│   ├── tam_dev_data
+│   └── tam_train_data
+├── doc
+├── env_management
+├── outputs
+│   ├── D2
+│   │   ├── mal
+│   │   └── tam
+│   └── D3
+│       ├── mal
+│       └── tam
+├── results
+└── src
+    ├── classifiers
+    ├── common
+    ├── config
+    │   ├── audio_vectorization
+    │   ├── indic_bert
+    │   ├── layer_vectorization
+    │   ├── pipeline
+    │   ├── xlm_roberta
+    │   └── xlm_roberta_twitter_sentiment
+    ├── pipeline_transformers
+    ├── preprocessing
+    ├── scripts
+    ├── slurm_scripts
+    ├── tests
+    └── transformer_lm
+```
