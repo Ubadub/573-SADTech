@@ -3,17 +3,27 @@ defaults:
   - override /hydra/launcher: submitit_slurm
   - _self_
 cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${clean_path:${hydra:job.override_dirname}}
+# cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${pipeline.text.vectorizer.layers_to_combine}/${clean_path:${hydra:job.override_dirname}}
 results_file: outputs/${cleaned_override_dirname}/${seed}.pkl
 lang: ???
 dataset: ../data/${lang}/train_dataset_dict
 hydra:
+  callbacks:
+    jobend_callback:
+      _target_: pipeline_transformers.callbacks.MyLogJobReturnCallback
+      # _target_: hydra.experimental.callbacks.LogJobReturnCallback
   launcher:
     account: stf
-    gres: "gpu:rtx6k:1"
-    # gres: "gpu:a40:1"
+    cpus_per_task: 4
+    # gres: "gpu:rtx6k:1"
+    gres: "gpu:a40:1"
     mem_gb: 36
     partition: ckpt
     timeout_min: 2880
+    # additional_parameters:
+    #   mail-user: "abhinavp@uw.edu"
+    #   mail-type: "BEGIN,END,FAIL,ARRAY_TASKS"
+    #   # mail-type: "ALL,ARRAY_TASKS"
   job:
     config:
       override_dirname:
@@ -25,6 +35,7 @@ hydra:
           - lang
           - pipeline.text.vectorizer
           - pipeline.text.vectorizer.language_model
+          # - pipeline.text.vectorizer.layers_to_combine
           - seed
           # - pipeline.classifier
         item_sep: ","
@@ -44,4 +55,5 @@ hydra:
   #     # +transformers@pipeline.postresample_transformers: scaler, pca
   #     seed: 0, 42, 100, 573, 2023
   # verbose: ${debug}
-  verbose: __main__
+  verbose: True
+  # verbose: ["__main__", "
