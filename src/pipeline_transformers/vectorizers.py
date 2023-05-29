@@ -1,3 +1,4 @@
+import logging
 from typing import Callable, Optional, Sequence
 
 from datasets import Dataset
@@ -14,6 +15,8 @@ from transformers import (
 )
 from transformers.tokenization_utils_base import BatchEncoding, VERY_LARGE_INTEGER
 from transformers.utils import ModelOutput
+
+log = logging.getLogger(__name__)
 
 
 class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
@@ -32,6 +35,7 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
         #     [Sequence[ArrayLike]], NDArray
         # ] = lambda x: np.concatenate(x, axis=1),
         model_max_length: int = 512,
+        device: str = "cuda:0",
         # model_max_length: Optional[int] = None,
     ):
         """Constructor.
@@ -98,7 +102,9 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
         super().__init__()
         # self._strat = strategy
         self.language_model: str = language_model
+        self.device: str = device
         self._lm: PreTrainedModel = AutoModel.from_pretrained(language_model)
+        self._lm.to(device)
         self._lm_kwargs: dict = {"output_hidden_states": True}
 
         # if model_max_length is None:
@@ -129,14 +135,16 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
         return self._tokenizer(
             list(docs),
             is_split_into_words=False,
-            # max_length=self.model_max_length,
-            padding=True,
+            max_length=self.model_max_length,
+            padding="max_length",
+            # padding=True,
             return_tensors="pt",
             truncation=True,
         )
 
     def _model_outputs(self, docs) -> ModelOutput:
-        model_inputs: BatchEncoding = self._tokenize_docs(docs)
+        model_inputs: BatchEncoding = self._tokenize_docs(docs).to(self.device)
+        log.info(f"model_inputs.input_ids.shape: {model_inputs.input_ids.shape}")
         return self._lm(**model_inputs, output_hidden_states=True)
 
     # model_outputs: Iterable[ModelOutput] = (
