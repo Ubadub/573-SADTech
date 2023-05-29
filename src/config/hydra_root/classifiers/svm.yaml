@@ -1,0 +1,7 @@
+_target_: sklearn.svm.SVC
+break_ties: True
+# class_weight: "balanced"
+# max_iter: -1
+# max_iter: 1000
+probability: True
+random_state: ${ref:global_rng}
