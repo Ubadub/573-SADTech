@@ -98,41 +98,32 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
             model_max_length:
                 ...
         """
-        # super().__init__(config=config)
         super().__init__()
-        # self._strat = strategy
         self.language_model: str = language_model
         self.device: str = device
-        self._lm: PreTrainedModel = AutoModel.from_pretrained(language_model)
-        self._lm.to(device)
-        self._lm_kwargs: dict = {"output_hidden_states": True}
 
         # if model_max_length is None:
         #     model_max_length = getattr(
-        #         self._lm.config, "max_position_embeddings", VERY_LARGE_INTEGER
+        #         self.lm_.config, "max_position_embeddings", VERY_LARGE_INTEGER
         #     )
 
         self.model_max_length = model_max_length
-        self._tokenizer: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
-            language_model,
-            model_max_length=self.model_max_length,
-        )
-        # self.model_max_length = self._tokenizer.max_len_single_sentence
-        # tokenizer_max_model_length = self._tokenizer.max_model_input_sizes.get(lm_name_or_path)
-        # self._model_max_length = self._lm.config.max_position_embeddings
-        # max_position_embeddings = getattr(self._lm.config, "max_position_embeddings", None)
+        # self.model_max_length = self.tokenizer_.max_len_single_sentence
+        # tokenizer_max_model_length = self.tokenizer_.max_model_input_sizes.get(lm_name_or_path)
+        # self._model_max_length = self.lm_.config.max_position_embeddings
+        # max_position_embeddings = getattr(self.lm_.config, "max_position_embeddings", None)
 
         # if model_max_length is None:
-        #                if self.self._tokenizer.max_model_input_sizes
+        #                if self.self.tokenizer_.max_model_input_sizes
 
-        #    self._model_max_length = self.getattr(self._lm.config, "max_position_embeddings", 0)
+        #    self._model_max_length = self.getattr(self.lm_.config, "max_position_embeddings", 0)
 
         self.layers_to_combine = layers_to_combine
         # self.combination_strategy = combination_strategy
         self.layer_combiner = layer_combiner
 
     def _tokenize_docs(self, docs) -> BatchEncoding:
-        return self._tokenizer(
+        return self.tokenizer_(
             list(docs),
             is_split_into_words=False,
             max_length=self.model_max_length,
@@ -145,13 +136,19 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
     def _model_outputs(self, docs) -> ModelOutput:
         model_inputs: BatchEncoding = self._tokenize_docs(docs).to(self.device)
         log.info(f"model_inputs.input_ids.shape: {model_inputs.input_ids.shape}")
-        return self._lm(**model_inputs, output_hidden_states=True)
+        return self.lm_(**model_inputs, output_hidden_states=True)
 
     # model_outputs: Iterable[ModelOutput] = (
     #     self._lm(i, **self._lm_kwargs) for i in model_inputs
     # )
 
     def fit(self, X, y=None):
+        self.tokenizer_: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
+            self.language_model,
+            model_max_length=self.model_max_length,
+        )
+        self.lm_: PreTrainedModel = AutoModel.from_pretrained(self.language_model)
+        self.lm_kwargs_: dict = {"output_hidden_states": True}
         return self
 
     @torch.no_grad()
@@ -175,6 +172,7 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
                 `n_features` is determined by `hidden_dim` and `self.layer_combiner`
                 (see class docs for more info).
         """
+        self.lm_.to(self.device)
         model_outputs: ModelOutput = self._model_outputs(X)
         n_layers = len(self.layers_to_combine)
         layers = (
@@ -185,4 +183,5 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
         cls_layers_by_doc_by_feats = np.stack([layer[:, 0] for layer in layers])
         vecs = self.layer_combiner(cls_layers_by_doc_by_feats)
         # print("Return vectors shape:", vecs.shape)
+        self.lm_.to("cpu")
         return vecs

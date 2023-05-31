@@ -1,10 +1,12 @@
 defaults:
   - text/vectorizer: TransformerLayerVectorizer
+  # - audio/vectorizer: ColumnSelector
   # - /classifiers@classifier: rf
   - _self_
 text:
   vectorizer: ???
-audio: []
+audio_col: ???
+# audio:
+#   vectorizer: ???
 joint: []
-# classifier: ???
-# model_save_path: saved_model/
+classifier: ???

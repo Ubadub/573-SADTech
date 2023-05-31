@@ -2,11 +2,12 @@
 defaults:
   - override /hydra/launcher: submitit_slurm
   - _self_
-cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${clean_path:${hydra:job.override_dirname}}
+cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${slash2under:${pipeline.audio_col}}/${clean_path:${hydra:job.override_dirname}}
 # cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${pipeline.text.vectorizer.layers_to_combine}/${clean_path:${hydra:job.override_dirname}}
 results_file: outputs/${cleaned_override_dirname}/${seed}.pkl
 lang: ???
-dataset: ../data/${lang}/train_dataset_dict
+dataset: ../data/${lang}/train_dataset_dict_featurized_audio
+# dataset: ../data/${lang}/train_dataset_dict
 hydra:
   callbacks:
     jobend_callback:
@@ -15,9 +16,11 @@ hydra:
   launcher:
     account: stf
     cpus_per_task: 4
+    # gpus_per_node: 1
     # gres: "gpu:rtx6k:1"
     gres: "gpu:a40:1"
-    mem_gb: 36
+    mem_gb: 48 # 36
+    # partition: "gpu-2080ti"
     partition: ckpt
     timeout_min: 2880
     # additional_parameters:
@@ -28,6 +31,7 @@ hydra:
     config:
       override_dirname:
         exclude_keys:
+          - pipeline.audio_col
           - dataset
           - debug
           - experiment

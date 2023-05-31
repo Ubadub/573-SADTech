@@ -2,7 +2,7 @@ import logging
 import os
 import pickle
 import sys
-from typing import Optional, Union
+from typing import Optional, Sequence, Union
 
 from imblearn.pipeline import Pipeline
 from datasets import Dataset, DatasetDict, load_from_disk
@@ -15,6 +15,7 @@ from sklearn.base import BaseEstimator
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import FunctionTransformer
 from sklearn.utils.validation import check_is_fitted
 
 from pipeline_transformers.utils import clean_path, exception_handler, setup_rng
@@ -30,17 +31,18 @@ CFG_RESULTS_FILE = "results_file"
 CFG_POSTRESAMPLE_TRANSFORMERS = "postresample_transformers"
 
 TEXT_COL = "text"
-AUDIO_COL = "audio"
 Y_COL = "label"
-# ALL_FEATS = [AUDIO_COL, TEXT_COL]
-ALL_FEATS = [TEXT_COL]
 
 log = logging.getLogger(__name__)
 
 
 # def crossfold(clf: BaseEstimator, ds: Dataset, do_fit=True, saved_models_root_path=None):
 def crossfold(
-    clf_or_saved_path: Union[str, BaseEstimator], ds: Dataset, n_splits: int
+    clf_or_saved_path: Union[str, BaseEstimator],
+    ds: Dataset,
+    n_splits: int,
+    feat_cols: Sequence[str],
+    y_col: str = Y_COL,
 ) -> dict:
     # if not do_fit and saved_models_root_path is None:
     #     sys.exit("Need to refit models or pass path to existing models.")
@@ -59,7 +61,7 @@ def crossfold(
     y_scores_pooled = []
 
     for n, (train_idxs, eval_idxs) in enumerate(
-        skfolds.split(range(ds.num_rows), ds[Y_COL])
+        skfolds.split(range(ds.num_rows), ds[y_col])
     ):
         # if n > 0:
         #     sys.exit(0)
@@ -70,12 +72,28 @@ def crossfold(
         eval_ds = ds.select(eval_idxs)
         train_df = train_ds.to_pandas()
         eval_df = eval_ds.to_pandas()
-        X_train, y_train = train_df[ALL_FEATS], train_df[Y_COL]
-        X_eval, y_true = eval_df[ALL_FEATS], eval_df[Y_COL].to_numpy()
+        X_train, y_train = train_df[feat_cols], train_df[y_col]
+        X_eval, y_true = eval_df[feat_cols], eval_df[y_col].to_numpy()
+
+        log.debug(f"X_train.shape: {X_train.shape}")
+        log.debug(f"y_train.shape: {y_train.shape}")
+        log.debug(f"X_eval.shape: {X_eval.shape}")
+        log.debug(f"y_true.shape: {y_true.shape}")
 
         if do_fit:
+            log.debug(f"Fitting with feat_cols: {feat_cols}")
             clf = clf_or_saved_path
+            # clf = clf_or_saved_path.named_steps["preprocessor"]
             # clf.fit(train_ds, y_train)
+            # transformed = clf.fit_transform(X_train, y_train)
+            # log.debug(f"transformed shape: {transformed.shape}")
+            # log.debug(f"transformed dtype: {transformed.dtype}")
+            # log.debug(f"transformed:\n{transformed}")
+            # transformed_eval = clf.fit_transform(X_eval, y_true)
+            # log.debug(f"transformed_eval shape: {transformed_eval.shape}")
+            # log.debug(f"transformed_eval dtype: {transformed_eval.dtype}")
+            # log.debug(f"transformed_eval:\n{transformed_eval}")
+            # return
             clf.fit(X_train, y_train)
         else:
             in_path = os.path.join(clf_or_saved_path, f"{n}.pkl")
@@ -100,48 +118,49 @@ def crossfold(
     }
 
 
-def train(
+def assemble_pipeline(
     pipeline_cfg: DictConfig,
-    ds: Dataset,
-    n_splits: int,
-    results_file: Optional[str] = None,
-    # default_cache_path = f"sklearn_cache/{os.path.basename(cfg_path)}/classifier"
-    # classifier_cache = cfg.get(CFG_CLASSIFIER_CACHE, default_cache_path)
-    # model_save_path = pipeline_cfg.get(CFG_MODEL_SAVE_PATH)
-) -> None:
-    text_preprocessors = pipeline_cfg.text
-    audio_preprocessors = pipeline_cfg.audio
+) -> Pipeline:
+    column_transformers = []
 
-    # text_transformers_cfg = pipeline_cfg.get(CFG_TEXT_TRANSFORMERS, [])
-    text_transformer = Pipeline(
-        steps=[
-            ("vectorizer", text_preprocessors.vectorizer),  # mandatory
-            *(
-                (tr_name, tr)
-                for tr_name, tr in text_preprocessors.get(CFG_TRANSFORMERS, {}).items()
-            ),
-        ],
-        # memory="sklearn_cache/text_transformer",
-    )
+    if "text" in pipeline_cfg:
+        text_preprocessors = pipeline_cfg.text
+        # audio_preprocessors = pipeline_cfg.audio
 
-    # audio_transformer = Pipeline(
-    #     steps=[
-    #         audio_preprocessors.vectorizer,  # mandatory
-    #         *(
-    #             (tr_name, tr)
-    #             for tr_name, tr in audio_preprocessors.get(CFG_TRANSFORMERS, {}).items()
-    #         ),
-    #     ],
-    # )
+        # text_transformers_cfg = pipeline_cfg.get(CFG_TEXT_TRANSFORMERS, [])
+        text_transformer = Pipeline(
+            steps=[
+                ("vectorizer", text_preprocessors.vectorizer),  # mandatory
+                *(
+                    (tr_name, tr)
+                    for tr_name, tr in text_preprocessors.get(CFG_TRANSFORMERS, {}).items()
+                ),
+            ],
+            # memory="sklearn_cache/text_transformer",
+        )
+        log.debug(f"Text transformer: {text_transformer}")
 
-    log.debug(f"Text transformer: {text_transformer}")
-    # log.debug(f"Audio transformer: {audio_transformer}")
+        column_transformers.append((TEXT_COL, text_transformer, TEXT_COL))
+
+    if "audio_col" in pipeline_cfg:
+        log.debug(f"Audio column: {pipeline_cfg.audio_col}")
+        column_transformers.append(("audio", FunctionTransformer(func=np.vstack), pipeline_cfg.audio_col))
+
+        # audio_transformer = Pipeline(
+        #     steps=[
+        #         audio_preprocessors.vectorizer,  # mandatory
+        #         *(
+        #             (tr_name, tr)
+        #             for tr_name, tr in audio_preprocessors.get(CFG_TRANSFORMERS, {}).items()
+        #         ),
+        #     ],
+        # )
+
+        # log.debug(f"Audio transformer: {audio_transformer}")
+
 
     preprocessor = ColumnTransformer(
-        transformers=[
-            (TEXT_COL, text_transformer, TEXT_COL),
-            # (AUDIO_COL, audio_transformer, AUDIO_COL),
-        ],
+        transformers=column_transformers,
         n_jobs=-1,
     )
 
@@ -185,7 +204,26 @@ def train(
 
     log.info(f"Pipeline: {clf}")
 
-    results = crossfold(clf_or_saved_path=clf, ds=ds, n_splits=n_splits)
+    return clf
+
+
+
+def train(
+    pipeline_cfg: DictConfig,
+    ds: Dataset,
+    n_splits: int,
+    results_file: Optional[str] = None,
+    # default_cache_path = f"sklearn_cache/{os.path.basename(cfg_path)}/classifier"
+    # classifier_cache = cfg.get(CFG_CLASSIFIER_CACHE, default_cache_path)
+    # model_save_path = pipeline_cfg.get(CFG_MODEL_SAVE_PATH)
+) -> None:
+    clf = assemble_pipeline(pipeline_cfg)
+    results = crossfold(
+        clf_or_saved_path=clf,
+        ds=ds,
+        n_splits=n_splits,
+        feat_cols=[TEXT_COL, pipeline_cfg.audio_col],
+    )
 
     if results_file is not None:
         results_dir = os.path.dirname(results_file)

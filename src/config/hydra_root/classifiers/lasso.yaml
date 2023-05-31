@@ -1,0 +1,3 @@
+_target_: sklearn.linear_model.Lasso
+random_state: ${ref:global_rng}
+alpha: 1.0

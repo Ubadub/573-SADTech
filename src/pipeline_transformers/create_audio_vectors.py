@@ -24,8 +24,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 from transformers import (
+    AutoFeatureExtractor,
     AutoModel,
-    AutoProcessor,
+    # AutoProcessor,
     MCTCTProcessor,
     PreTrainedModel,
     ProcessorMixin,
@@ -75,17 +76,19 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         log.debug("Fitting.")
         self.model_: PreTrainedModel = AutoModel.from_pretrained(self.model_path)
-        if "mctct" in self.model_.config.model_type:  # workaround
-            log.debug("MCTCT model; using MCTCTProcessor instead of AutoProcessor.")
-            self.processor_: ProcessorMixin = MCTCTProcessor.from_pretrained(
-                self.model_path
-            )
-        else:
-            self.processor_: ProcessorMixin = AutoProcessor.from_pretrained(
-                self.model_path
-            )
+        self.feature_extractor_ = AutoFeatureExtractor.from_pretrained(self.model_path)
+        # if "mctct" in self.model_.config.model_type:  # workaround
+        #     log.debug("MCTCT model; using MCTCTProcessor instead of AutoProcessor.")
+        #     self.processor_: ProcessorMixin = MCTCTProcessor.from_pretrained(
+        #         self.model_path
+        #     )
+        # else:
+        #     self.processor_: ProcessorMixin = AutoProcessor.from_pretrained(
+        #         self.model_path
+        #     )
         self._converter = datasets.Audio(
-            sampling_rate=self.processor_.feature_extractor.sampling_rate
+            sampling_rate=self.feature_extractor_.sampling_rate
+            # sampling_rate=self.processor_.feature_extractor.sampling_rate
         )
         if getattr(self.model_.config, "is_encoder_decoder", False):
             log.debug("Model is encoder-decoder; saving encoder only.")
@@ -130,7 +133,8 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
 
         log.debug(f"Total samples: {num_samples}")
 
-        inputs = self.processor_(
+        inputs = self.feature_extractor_(
+        # inputs = self.processor_(
             # audio_array[0],  # get the first one for testing purposes
             # batch,
             audio_array,

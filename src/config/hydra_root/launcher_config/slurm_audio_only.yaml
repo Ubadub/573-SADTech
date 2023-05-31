@@ -1,0 +1,20 @@
+# @package _global_
+defaults:
+  - /launcher_config/slurm 
+  - _self_
+cleaned_override_dirname: ${lang}/audio_only/${slash2under:${pipeline.audio_col}}/${clean_path:${hydra:job.override_dirname}}
+hydra:
+  job:
+    config:
+      override_dirname:
+        exclude_keys:
+          - pipeline
+          - pipeline.audio_col
+          - dataset
+          - debug
+          - launcher_config
+          - lang
+          - seed
+          # - pipeline.classifier
+        item_sep: ","
+        kv_sep: "="
