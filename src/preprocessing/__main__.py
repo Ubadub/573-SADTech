@@ -45,6 +45,6 @@ ds_dict: DatasetDict = assemble_dataset(
     class_labels=CLASS_LABELS,
     drop_file=args.drop_file,
     tokenizer=args.tokenizer,
-    model=args.model,
+    # model=args.model,
 )
 ds_dict.save_to_disk(output_path)
