@@ -40,6 +40,8 @@ dependencies:
   - types-setuptools
   - types-tabulate
   - mkl < 2022
+  - matplotlib
+  - seaborn
   - pip:
     - hydra-submitit-launcher
     - types-pywin32
