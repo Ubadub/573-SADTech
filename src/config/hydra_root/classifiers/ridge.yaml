@@ -1,4 +1,4 @@
-_target_: sklearn.linear_model.Lasso
+_target_: sklearn.linear_model.Ridge
 alpha: 1.0
 # fit_intercept: False
 random_state: ${ref:global_rng}

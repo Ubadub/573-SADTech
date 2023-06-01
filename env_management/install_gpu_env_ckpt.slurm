@@ -23,5 +23,4 @@
 
 # ignored
 #SBATCH --mail-type=BEGIN,END
-#SBATCH --chdir=/mmfs1/gscratch/stf/abhinavp/573-SADTech
 #SBATCH --gres=gpu:rtx6k:1

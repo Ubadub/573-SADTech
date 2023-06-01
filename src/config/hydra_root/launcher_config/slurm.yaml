@@ -2,11 +2,13 @@
 defaults:
   - override /hydra/launcher: submitit_slurm
   - _self_
-cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${slash2under:${pipeline.audio_col}}/${clean_path:${hydra:job.override_dirname}}
+base_dir: /mmfs1/gscratch/scrubbed/abhinavp/
+cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${slash2under:${pipeline.audio.column_name}}/${clean_path:${hydra:job.override_dirname}}
 # cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${pipeline.text.vectorizer.layers_to_combine}/${clean_path:${hydra:job.override_dirname}}
-results_file: outputs/${cleaned_override_dirname}/${seed}.pkl
+results_file: ${base_dir}/outputs/${cleaned_override_dirname}/seed=${seed}/results.pkl
+model_dir: ${base_dir}/outputs/${cleaned_override_dirname}/seed=${seed}/models
 lang: ???
-dataset: ../data/${lang}/train_dataset_dict_featurized_audio
+dataset: ../data/${lang}/full_dataset_dict
 # dataset: ../data/${lang}/train_dataset_dict
 hydra:
   callbacks:
@@ -31,26 +33,40 @@ hydra:
     config:
       override_dirname:
         exclude_keys:
-          - pipeline.audio_col
+          - base_dir
+          - cleaned_override_dirname
+          - results_file
+          - model_dir
+          - hydra.launcher
+          - hydra.sweep.dir
+          - hydra.sweep.subdir
           - dataset
           - debug
           - experiment
           - launcher_config
           - lang
+          - pipeline.text
+          - pipeline.audio
+          - pipeline.audio.column_name
+          - pipeline.text.column_name
           - pipeline.text.vectorizer
           - pipeline.text.vectorizer.language_model
-          # - pipeline.text.vectorizer.layers_to_combine
           - seed
+          - hydra.verbose
+          # - pipeline.text.vectorizer.layers_to_combine
           # - pipeline.classifier
-        item_sep: ","
+        item_sep: "%"
         kv_sep: "="
   sweep:
     # dir: multirun
-    dir: multirun/${now:%m-%d-%H-%M}
+    dir: ${base_dir}/multirun/${now:%m-%d-%H-%M}
     # dir: multirun/${hydra:job.override_dirname}
     subdir: ${cleaned_override_dirname}/${seed}
     # subdir: ${pipeline.classifier.__target__}/${hydra:job.override_dirname}/${seed}
-  #   subdir: 
+  # verbose: ${debug}
+  verbose: True
+  # verbose: ["__main__", "
+  #   subdir:
   # sweeper:
   #   params:
   #     classifiers@pipeline.classifier: rf, logistic
@@ -58,6 +74,3 @@ hydra:
   #     +transformers@pipeline.postresample_transformers: scaler, no_transformer
   #     # +transformers@pipeline.postresample_transformers: scaler, pca
   #     seed: 0, 42, 100, 573, 2023
-  # verbose: ${debug}
-  verbose: True
-  # verbose: ["__main__", "

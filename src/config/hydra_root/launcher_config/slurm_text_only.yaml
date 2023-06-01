@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
-  - /launcher_config/slurm
+  - /launcher_config/slurm 
   - _self_
-cleaned_override_dirname: ${lang}/audio_only/${slash2under:${pipeline.audio.column_name}}/${clean_path:${hydra:job.override_dirname}}
+cleaned_override_dirname: ${lang}/text_only/${slash2under:${pipeline.text.vectorizer.language_model}}/${clean_path:${hydra:job.override_dirname}}
 # hydra:
 #   job:
 #     config:
