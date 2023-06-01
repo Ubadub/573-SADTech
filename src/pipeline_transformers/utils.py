@@ -1,16 +1,31 @@
 from functools import wraps
+import logging
 import os
 import re
 from typing import Any, Callable, ParamSpec, TypeVar
 
 import hydra
+from imblearn.pipeline import Pipeline
+import numpy as np
 from omegaconf import DictConfig, OmegaConf
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import FunctionTransformer
 
 T = TypeVar("T")
 P = ParamSpec("P")
 
-ITEM_SEP = r","
+ITEM_SEP = r"%"
 KV_SEP = r"="
+CFG_CHANGE_SYMS = "+~"
+CFG_PKG_GRP_SEP = "@"
+CFG_PKG_SEPS = "./"
+
+CFG_TRANSFORMERS = "transformers"
+CFG_PRERESAMPLE_TRANSFORMERS = "preresample_transformers"
+CFG_RESAMPLERS = "resamplers"
+CFG_POSTRESAMPLE_TRANSFORMERS = "postresample_transformers"
+
+log = logging.getLogger(__name__)
 
 
 def exception_handler(
@@ -34,11 +49,24 @@ slash2under = lambda x: x.replace(os.sep, "_")
 
 
 def clean_path(path: str) -> str:
-    matches = re.findall(f"{KV_SEP}(.*?)(?:{ITEM_SEP}|$)", path)
-    if matches:
-        return os.sep.join([slash2under(_) for _ in matches])
-    else:
-        return slash2under(path)
+    args = (_.lstrip(CFG_CHANGE_SYMS) for _ in path.split(ITEM_SEP))
+    args_cleaned = (_.split(CFG_PKG_GRP_SEP)[-1] for _ in args)
+    sorted_args = sorted(args_cleaned, reverse=True)
+    arg_pieces = (
+        re.findall(
+            rf"[{CFG_PKG_SEPS}]?([^{CFG_PKG_SEPS}]*){KV_SEP}(.+)$|^([^{KV_SEP}]+)$", _
+        )
+        for _ in sorted_args
+    )
+    flattened = (match_grp for __ in arg_pieces for match_grp in __)
+    no_empties_no_slashes = ((slash2under(_) for _ in __ if _) for __ in flattened)
+    return os.sep.join(KV_SEP.join(_) for _ in no_empties_no_slashes)
+    # arg_pieces_no_empties = ((
+    # matches = re.findall(f"{KV_SEP}(.*?)(?:{ITEM_SEP}|$)", path)
+    # if matches:
+    #     return os.sep.join([slash2under(_) for _ in matches])
+    # else:
+    #     return slash2under(path)
 
 
 OmegaConf.register_new_resolver("clean_path", clean_path)
@@ -86,3 +114,101 @@ def setup_rng(cfg: DictConfig) -> DictConfig:
     # cfg = DictConfig(cfg, flags={"allow_objects": True})
     cfg.global_rng = hydra.utils.instantiate(cfg.global_rng)
     return resolve_conf_crossrefs(cfg)
+
+
+def assemble_pipeline(
+    pipeline_cfg: DictConfig,
+) -> Pipeline:
+    column_transformers = []
+
+    if "text" in pipeline_cfg:
+        text_cfg = pipeline_cfg.text
+        text_col = text_cfg.column_name
+        # audio_preprocessors = pipeline_cfg.audio
+
+        # text_transformers_cfg = pipeline_cfg.get(CFG_TEXT_TRANSFORMERS, [])
+        text_transformer = Pipeline(
+            steps=[
+                ("vectorizer", text_cfg.vectorizer),  # mandatory
+                *(
+                    (tr_name, tr)
+                    for tr_name, tr in text_cfg.get(CFG_TRANSFORMERS, {}).items()
+                ),
+            ],
+            # memory="sklearn_cache/text_transformer",
+        )
+        log.debug(f"Text transformer: {text_transformer}")
+
+        column_transformers.append((text_col, text_transformer, text_col))
+
+    if "audio" in pipeline_cfg:
+        audio_cfg = pipeline_cfg.audio
+        audio_col = audio_cfg.column_name
+        log.debug(f"Audio column: {audio_col}")
+        column_transformers.append(
+            ("audio", FunctionTransformer(func=np.vstack), audio_col)
+        )
+
+        # audio_transformer = Pipeline(
+        #     steps=[
+        #         audio_preprocessors.vectorizer,  # mandatory
+        #         *(
+        #             (tr_name, tr)
+        #             for tr_name, tr in audio_preprocessors.get(CFG_TRANSFORMERS, {}).items()
+        #         ),
+        #     ],
+        # )
+
+        # log.debug(f"Audio transformer: {audio_transformer}")
+
+    if "text" not in pipeline_cfg and "audio" not in pipeline_cfg:
+        raise ValueError(
+            "Must specify at least one of text or audio in pipeline config."
+        )
+
+    preprocessor = ColumnTransformer(
+        transformers=column_transformers,
+        n_jobs=-1,
+    )
+
+    log.debug(f"Preprocessor: {preprocessor}")
+
+    preresample_transformers = [
+        (tr_name, tr)
+        for tr_name, tr in pipeline_cfg.get(CFG_PRERESAMPLE_TRANSFORMERS, {}).items()
+    ]
+
+    log.debug(f"Preresample transformers: {preresample_transformers}")
+
+    resamplers = [
+        (resampler_name, resampler)
+        for resampler_name, resampler in pipeline_cfg.get(CFG_RESAMPLERS, {}).items()
+    ]
+
+    log.debug(f"Resamplers: {resamplers}")
+
+    postresample_transformers = [
+        (tr_name, tr)
+        for tr_name, tr in pipeline_cfg.get(CFG_POSTRESAMPLE_TRANSFORMERS, {}).items()
+    ]
+
+    log.debug(f"Postresample transformers: {postresample_transformers}")
+
+    classifier = pipeline_cfg.classifier  # mandatory
+
+    log.debug(f"Classifier: {classifier}")
+
+    clf = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            *preresample_transformers,
+            *resamplers,
+            *postresample_transformers,
+            ("classifier", classifier),
+        ],
+        # memory=classifier_cache,
+    )
+
+    log.info(f"Pipeline: {clf}")
+
+    return clf
