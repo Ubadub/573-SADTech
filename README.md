@@ -6,78 +6,24 @@
   1. Sam Briggs (briggs3)
   1. Tara Wueger (taraw28)
 
-## D3 Run Instructions
-  1. Download data/ and outputs/ directory from [Google Drive](https://drive.google.com/drive/folders/1f6dj4FIjZ8c6yNKZ6FTk7oA3ejqObalY), merging them with the same directories from this repo (it is fine to overwrite any files if asked, but the merging strategy should ensure tthat every file in at least one of the two locations(repo and Drive) appears in your local folder). The structure of the data/ directory should look like:
-  ```
-    data/
-      mal/
-        audio/
-          MAL_MSA_01.mp3
-          ...
-          MAL_MSA_70.mp3
-        text/
-          MAL_MSA_01.txt
-          ...
-          MAL_MSA_70.txt
-        video/
-          MAL_MSA_01.mp4
-          ...
-          MAL_MSA_70.mp4
-        all.csv
-        dev.csv
-        train.csv
-        train_dataset_dict/
-          ...
-      tam/
-        audio/
-          TAM_MSA_01.mp3
-          ...
-          TAM_MSA_64.mp3
-        text/
-          TAM_MSA_01.txt
-          ...
-          TAM_MSA_64.txt
-        video/
-          TAM_MSA_01.mp4
-          ...
-          TAM_MSA_64.mp4
-        all.csv
-        dev.csv
-        train.csv
-        train_dataset_dict/
-          ...
-  ```
-  The outputs/ directory should look like:
-  ```
-    outputs/
-      D3/
-        mal/
-          transformer_model/
-            ...
-          xlm4layers_logistic/
-            ...
-          xlm4layers_rf/
-            ...
-          nb_output.txt
-        tam/
-          transformer_model/
-            ...
-          xlm4layers_logistic/
-            ...
-          xlm4layers_rf/
-            ...
-          nb_output.txt
-  ```
-  Note: You might need to merge the `outputs/` folder downloaded from Google Drive with the `outputs/` folder in the git repository.
-  
-  2. For condor: Run `condor_submit D3.cmd` from root directory of our repo (ensuring you have Anaconda or Miniconda installed)
+## Shared Task Description
+Multimodal Abusive Language Detection and Sentiment Analysis: [DravidianLangTech@RANLP 2023 shared task hosted on CodaLab](https://codalab.lisn.upsaclay.fr/competitions/11092#learn_the_details-overview)
+
+- two multimodal (text, audio, video) subtasks:
+  1. abusive language detection in Tamil
+  2. **sentiment analysis in both Tamil and Malayalam**
+
+- We split the second subtask into a primary and adaptation task:
+  1. Primary task: text data
+  2. Adaptation task: audio data
+
+## D4 Run Instructions
+  1. cd in the `/projects/assigned/2223_ling573_group6/573-SADTech` directory on patas.
+  2. For condor: Run `condor_submit D4.cmd` from the root directory of our repo (ensuring you have Anaconda or Miniconda installed)
   3. For local:
     - Install the conda environment following the instructions below, under "Development & Contribution Guidelines" >> "Local Development Setup".
     - Edit the Anaconda paths on lines 4, 5, as appropriate.
-    - Then, run `./src/d3_run.sh` from the root directory of our repo.
-
-## Shared Task Description
-TODO
+    - Then, run `./src/d4_run.sh` from the root directory of our repo.
 
 ## Development & Contribution Guidelines
 
@@ -112,17 +58,9 @@ You will only need to make sure you have a recent version of Anaconda. All other
     ```
 1. Remember: once you've run steps 1, 2, and 4, you won't need to repeat them again. Just activate as in step 3 and deactivate when done as in step 4.
 
-### Hyak Development Setup
-TODO
-
 ### Patas Development Setup
 
-TODO: Once Patas is working, create environments for shared use in a shared directory so we don't all have to recreate
-environments each time. The following instructions assume that has already been done.
-
-TODO: The following instructions mention a CPU/GPU `environment.yml` file distinction, but we still need to create the GPU environment, probably on Hyak for the time being.
-
-On Patas, we have already created two environments for use with this project. One is for use with GPU nodes, and the other with CPU nodes (including the head node that you would normally ssh into) (TODO: actually, no we have not yet).
+On Patas, we have already created two environments for use with this project. One is for use with GPU nodes, and the other with CPU nodes (including the head node that you would normally ssh into)
 
 Instructions on setting up Conda on Patas can be found [here](https://www.shane.st/teaching/575/spr22/patas-gpu.pdf). n.b.: you will have to go to the Anaconda website and find the link to the most recent version, as the link in this PDF is out of date.
 
@@ -184,9 +122,3 @@ Then make sure the updated `(gpu_)environment.yml` file is included with your co
 
 Please manually edit the YAML file to include appropriate version number strings if at all possible. If you installed
 without specifying an explicit version string, it won't be included with the `--from-history` flag.
-
-
-## Directory Structure
-
-[WIP]
-
