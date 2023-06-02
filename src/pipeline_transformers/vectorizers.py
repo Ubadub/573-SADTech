@@ -142,7 +142,7 @@ class TransformerLayerVectorizer(BaseEstimator, TransformerMixin):
     #     self._lm(i, **self._lm_kwargs) for i in model_inputs
     # )
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> BaseEstimator:
         self.tokenizer_: PreTrainedTokenizerBase = AutoTokenizer.from_pretrained(
             self.language_model,
             model_max_length=self.model_max_length,

@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - slurm
+  - _self_
+# pipeline.text.vectorizer.device: cpu
+hydra:
+  launcher:
+    account: stf
+    cpus_per_task: 16
+    gres: null
+    mem_gb: 128
+    partition: compute
+    timeout_min: 2880

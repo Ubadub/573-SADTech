@@ -2,9 +2,16 @@ defaults:
   - pipeline: default_pipeline
   - global_rng: default_rng
   - _self_
-dataset: ???
+base_dir: /mmfs1/gscratch/scrubbed/abhinavp/
+# cleaned_override_dirname: ???
+cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${slash2under:${pipeline.audio.column_name}}/${clean_path:${hydra:job.override_dirname}}
+# cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${pipeline.text.vectorizer.layers_to_combine}/${clean_path:${hydra:job.override_dirname}}
+results_file: ${base_dir}/outputs/${cleaned_override_dirname}/seed=${seed}/results.pkl
+model_dir: ${base_dir}/outputs/${cleaned_override_dirname}/seed=${seed}/models
+dataset: ../data/${lang}/full_dataset_dict
 debug: False
+# do_fit: True
 global_rng: ???
+lang: ???
 n_splits: 4
 seed: 573
-# mode: crossfold

@@ -1,0 +1,25 @@
+defaults:
+  - _self_
+dataset: ../data/${lang}/full_dataset_dict
+debug: False
+# do_fit: True
+lang: ???
+pipeline_path: ???
+outputs:
+  root_dir: ../outputs/D4
+  sub_dir: ??? # primary/secondary
+  dev_subdir: devtest
+  test_subdir: evaltest
+  file_name: ${lang}.tsv
+results:
+  root_dir: ../results/D4
+  sub_dir: ??? # D4/primary
+  dev_subdir: devtest
+  test_subdir: evaltest
+  file_name: D4_scores.out
+# results_file_dir: ../
+# results_subdir: 
+# results
+# results_file_name: ??? # D4/primary
+# results_file: ${results_file_dir}/${results_subdir}/${results_file_name}
+n_splits: 4

@@ -57,14 +57,14 @@ def multiseed_average(root_dir: str) -> dict:
                         with open(f, "rb") as _:
                             res_dict = pickle.load(file=_)
                         dev_report = classification_report(
-                            res_dict["y_true"],
-                            res_dict["y_pred"],
+                            res_dict["dev_y_true"],
+                            res_dict["dev_y_pred"],
                             output_dict=True,
                             zero_division=0,
                         )
                         test_report = classification_report(
-                            res_dict["full_y_true"],
-                            res_dict["full_y_pred"],
+                            res_dict["test_y_true"],
+                            res_dict["test_y_pred"],
                             output_dict=True,
                             zero_division=0,
                         )

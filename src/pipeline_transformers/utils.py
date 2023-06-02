@@ -1,6 +1,7 @@
 from functools import wraps
 import logging
 import os
+import pickle
 import re
 from typing import Any, Callable, ParamSpec, TypeVar
 
@@ -114,6 +115,19 @@ def setup_rng(cfg: DictConfig) -> DictConfig:
     # cfg = DictConfig(cfg, flags={"allow_objects": True})
     cfg.global_rng = hydra.utils.instantiate(cfg.global_rng)
     return resolve_conf_crossrefs(cfg)
+
+
+def load_pipeline(path: str) -> Pipeline:
+    # in_path = os.path.join(clf_or_saved_path, f"fold{n}.model")
+    log.info(f"Loading model from: {path}")
+    with open(path, "rb") as f:
+        clf = pickle.load(f)
+
+    assert isinstance(
+        clf, Pipeline
+    ), f"Tried to unpickle Pipeline object, but got object of type: {type(clf)}"
+
+    return clf
 
 
 def assemble_pipeline(

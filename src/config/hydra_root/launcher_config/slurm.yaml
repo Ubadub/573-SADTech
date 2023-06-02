@@ -2,14 +2,6 @@
 defaults:
   - override /hydra/launcher: submitit_slurm
   - _self_
-base_dir: /mmfs1/gscratch/scrubbed/abhinavp/
-cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${slash2under:${pipeline.audio.column_name}}/${clean_path:${hydra:job.override_dirname}}
-# cleaned_override_dirname: ${lang}/${slash2under:${pipeline.text.vectorizer.language_model}}/${pipeline.text.vectorizer.layers_to_combine}/${clean_path:${hydra:job.override_dirname}}
-results_file: ${base_dir}/outputs/${cleaned_override_dirname}/seed=${seed}/results.pkl
-model_dir: ${base_dir}/outputs/${cleaned_override_dirname}/seed=${seed}/models
-lang: ???
-dataset: ../data/${lang}/full_dataset_dict
-# dataset: ../data/${lang}/train_dataset_dict
 hydra:
   callbacks:
     jobend_callback:
@@ -50,6 +42,8 @@ hydra:
           - pipeline.audio.column_name
           - pipeline.text.column_name
           - pipeline.text.vectorizer
+          - pipeline/text/vectorizer
+          - pipeline.text.vectorizer.device
           - pipeline.text.vectorizer.language_model
           - seed
           - hydra.verbose
