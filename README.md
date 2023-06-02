@@ -23,6 +23,7 @@ Multimodal Abusive Language Detection and Sentiment Analysis: [DravidianLangTech
   3. For local:
     - Install the conda environment following the instructions below, under "Development & Contribution Guidelines" >> "Local Development Setup".
     - Edit the Anaconda paths on lines 4, 5, as appropriate.
+    - If pulling from git, copy the `data/` and `output/` folders from the `/projects/assigned/2223_ling573_group6/573-SADTech` directory on patas
     - Then, run `./src/d4_run.sh` from the root directory of our repo.
 
 ## Development & Contribution Guidelines
