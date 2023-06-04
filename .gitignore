@@ -144,3 +144,7 @@ dmypy.json
 *.bin
 *.model
 *.pkl
+
+# Hydra
+src/outputs
+src/multirun

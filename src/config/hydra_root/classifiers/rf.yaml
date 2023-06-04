@@ -1,0 +1,4 @@
+_target_: sklearn.ensemble.RandomForestClassifier
+_args_: []
+random_state: ${ref:global_rng}
+n_jobs: -1

@@ -165,7 +165,6 @@ class DocumentEmbeddings(BaseEstimator, TransformerMixin):
         self.language_model = language_model
         self.tfidf_weighted = tfidf_weighted
 
-
     def _tokenize_example(self, example: str) -> list[int]:
         """
         Params:

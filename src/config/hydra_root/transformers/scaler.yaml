@@ -1,0 +1,2 @@
+scaler:
+  _target_: sklearn.preprocessing.StandardScaler

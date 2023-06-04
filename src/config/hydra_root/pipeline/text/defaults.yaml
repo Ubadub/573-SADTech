@@ -1,0 +1,4 @@
+defaults:
+  # - vectorizer: TransformerLayerVectorizer
+  # - /pipeline/transformers@transformers: []
+  - _self_

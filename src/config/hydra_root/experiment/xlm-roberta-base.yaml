@@ -1,0 +1,4 @@
+# @package _global_
+defaults:
+  - override /pipeline/text/vectorizer: xlm-roberta-base
+  - _self_

@@ -1,0 +1,4 @@
+# @package _global_
+defaults:
+  - override /pipeline/text/vectorizer: indic-bert
+  - _self_

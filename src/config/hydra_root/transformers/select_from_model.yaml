@@ -1,0 +1,4 @@
+select_from_model:
+  _target_: sklearn.feature_selection.SelectFromModel
+  estimator: ???
+  # /classifiers@estimator: lasso

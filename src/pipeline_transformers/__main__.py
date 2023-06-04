@@ -1,275 +1,390 @@
-from argparse import ArgumentParser
-
+import logging
 import os
 import pickle
 import sys
-from typing import Optional, Union
-
-from imblearn.pipeline import Pipeline
-
-import numpy as np
+from typing import Optional, Sequence, Union
 
 from datasets import Dataset, DatasetDict, load_from_disk
-
+import hydra
+from hydra.core.hydra_config import HydraConfig
+from imblearn.pipeline import Pipeline
+from omegaconf import DictConfig, OmegaConf
+import pandas as pd
+import submitit
 from sklearn.base import BaseEstimator
-from sklearn.compose import ColumnTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+from sklearn.exceptions import NotFittedError
 from sklearn.metrics import classification_report
 from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import StandardScaler
+from sklearn.utils.validation import check_is_fitted
 
-import yaml
+from pipeline_transformers.utils import (
+    assemble_pipeline,
+    clean_path,
+    exception_handler,
+    load_pipeline,
+    setup_rng,
+)
 
-from common import GLOBAL_SEED
+# CFG_MODEL_SAVE_PATH = "model_save_path"
 
-np.random.seed(GLOBAL_SEED)
+CFG_MODEL_DIR = "model_dir"
+CFG_RESULTS_FILE = "results_file"
 
-CFG_CLASSIFIER_CACHE = "ClassifierCachePath"
-
-CFG_TEXT_TRANSFORMERS = "TextTransformers"
-CFG_AUDIO_TRANSFORMERS = "AudioTransformers"
-CFG_CLASSIFIER = "Classifier"
-CFG_RESAMPLERS = "Resamplers"
-CFG_NAME = "name"
-CFG_CLASS = "class"
-CFG_ARGS = "args"
-CFG_KWARGS = "kwargs"
-
-TEXT_COL = "text"
-AUDIO_COL = "audio"
 Y_COL = "label"
-ALL_FEATS = [AUDIO_COL, TEXT_COL]
-# ALL_FEATS = [TEXT_COL]
 
-PARSER_CONFIG = {
-    # "prog": "python -m transformer_lm",
-    "description": "For testing/deliverables",
-}
+log = logging.getLogger(__name__)
 
-SUBPARSERS_CONFIG = {
-    "title": "Action",
-    "description": "Action to execute- training or inference.",
-    # "dest": "action",
-    "required": True,
-    "help": "Select finetune to do finetuning or infer to do inference.",
-    # "metavar": f"[{', '.join(filters.CLI_FILTERS.keys())}]",
-}
+
+def fit_save(
+    clf: Pipeline,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    save_dir: Optional[str] = None,
+    save_file_name: str = "model",
+) -> Pipeline:
+    clf.fit(X_train, y_train)
+
+    if save_dir is not None:
+        model_fpath = os.path.join(save_dir, save_file_name)
+        with open(model_fpath, "wb") as f:
+            pickle.dump(clf, file=f)
+            log.info(f"Pickled {save_file_name} pipeline to {model_fpath}.")
+    ## X_new = clf.fit_transform(X_train, y_train)
+    ## log.debug(f"X_new shape: X_new.shape")
+    ## log.debug(f"X_new: X_new")
+    ## clf_scaler = clf.named_steps["scaler"]
+    ## # clf_preproc = clf.named_steps["preprocessor"]
+    ## clf_selector = clf.named_steps["select_from_model"]
+    ## support_bool = clf_selector.get_support()
+    ## support_idxs = clf_selector.get_support(indices=True)
+    ## log.debug(f"clf_selector bool support:\n{support_bool}")
+    ## log.debug(f"clf_selector bool support shape:\n{support_bool.shape}")
+    ## log.debug(f"clf_selector idxs support:\n{support_idxs}")
+    ## log.debug(f"clf_selector idxs support shape:\n{support_idxs.shape}")
+
+    return clf
+
+
+def fit_save_or_load(
+    do_fit: bool,
+    clf_or_saved_path: Union[str, BaseEstimator],
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    save_dir: Optional[str] = None,
+    save_file_name: str = "model",
+):
+    if do_fit:
+        clf = fit_save(
+            clf_or_saved_path,
+            X_train,
+            y_train,
+            save_dir=save_dir,
+            save_file_name=save_file_name,
+            # save_file_name=f"fold{n}.model",
+        )
+    else:
+        # in_path = os.path.join(clf_or_saved_path, f"fold{n}.model")
+        in_path = os.path.join(clf_or_saved_path, save_file_name)
+        clf = load_pipeline(in_path)
+
+    return clf
 
 
 # def crossfold(clf: BaseEstimator, ds: Dataset, do_fit=True, saved_models_root_path=None):
-def crossfold(clf_or_saved_path: Union[str, BaseEstimator], ds: Dataset):
+def crossfold(
+    do_fit: bool,
+    clf_or_saved_path: Union[str, BaseEstimator],
+    train_df: pd.DataFrame,
+    test_df: Optional[pd.DataFrame] = None,
+    n_splits: int = 4,
+    # feat_cols: Sequence[str],
+    y_col: str = Y_COL,
+    save_dir: Optional[str] = None,
+) -> dict:
     # if not do_fit and saved_models_root_path is None:
     #     sys.exit("Need to refit models or pass path to existing models.")
+    # if isinstance(clf_or_saved_path, str):
+    #     do_fit = False
+    # elif isinstance(clf_or_saved_path, BaseEstimator):
+    #     log.info(
+    #         "Pipeline already fitted. Doing crossvalidation inference + test inference."
+    #     )
+    #     do_fit = True
+    # else:
+    #     log.critical("Need to provide classifier or path to saved classifiers.")
+    #     sys.exit()
 
-    if isinstance(clf_or_saved_path, str):
-        do_fit = False
-    elif isinstance(clf_or_saved_path, BaseEstimator):
-        do_fit = True
-    else:
-        sys.exit("Need to provide classifier or path to saved classifiers.")
+    if save_dir is not None:
+        if save_dir:  # save_dir could be empty string, i.e. current path
+            os.makedirs(save_dir, exist_ok=True)
 
-    skfolds = StratifiedKFold(n_splits=4)
+    skfolds = StratifiedKFold(n_splits=n_splits)
 
     y_true_pooled = []
     y_pred_pooled = []
+    y_scores_pooled = []
+    dev_files_pooled = []
 
     for n, (train_idxs, eval_idxs) in enumerate(
-        skfolds.split(range(ds.num_rows), ds[Y_COL])
+        skfolds.split(range(len(train_df.index)), train_df[y_col])
     ):
-        # if n > 0:
-        #     sys.exit(0)
-        # print(f"train_idxs: {train_idxs}")
-        # print(f"eval_idxs: {eval_idxs}")
-        # train_ds = rebalance_ds(ds.select(train_idxs), seed=GLOBAL_SEED, shuffle=True, shuffle_seed=GLOBAL_SEED)
-        train_ds = ds.select(train_idxs)
-        eval_ds = ds.select(eval_idxs)
-        train_df = train_ds.to_pandas()
-        eval_df = eval_ds.to_pandas()
-        X_train, y_train = train_df[ALL_FEATS], train_df[Y_COL]
-        X_eval, y_true = eval_df[ALL_FEATS], eval_df[Y_COL].to_numpy()
+        log.debug(f"train_idxs: {train_idxs}")
+        log.debug(f"eval_idxs: {eval_idxs}")
+        # fold_train_ds = rebalance_ds(ds.select(train_idxs), seed=GLOBAL_SEED, shuffle=True, shuffle_seed=GLOBAL_SEED)
+        # fold_train_ds = train_ds.select(train_idxs)
+        # eval_ds = train_ds.select(eval_idxs)
+        # train_df = fold_train_ds.to_pandas()
+        # eval_df = eval_ds.to_pandas()
+        fold_train_df = train_df.iloc[train_idxs].reset_index(drop=True)
+        fold_eval_df = train_df.iloc[eval_idxs].reset_index(drop=True)
+        X_train, y_train = fold_train_df, fold_train_df[y_col]
+        X_eval, y_true = fold_eval_df, fold_eval_df[y_col].to_numpy()
 
-        if do_fit:
-            clf = clf_or_saved_path
-            # clf.fit(train_ds, y_train)
-            clf.fit(X_train, y_train)
-        else:
-            in_path = os.path.join(clf_or_saved_path, f"{n}.pkl")
-            # print("Loading model from:", in_path)
-            with open(in_path, "rb") as f:
-                clf = pickle.load(f)
-
-        yield clf
-
-        y_pred = clf.predict(X_eval)
-
-        y_true_pooled.extend(y_true)
-        y_pred_pooled.extend(y_pred)
-        # print(f"y_true: {list(y_true)}")
-        # print(f"y_pred: {list(y_pred)}")
-
-    print(classification_report(y_true_pooled, y_pred_pooled))
-
-
-def train(cfg_path: str, dataset_path: str, save_model_to: Optional[str] = None):
-    with open(cfg_path, "r") as ymlfile:
-        cfg = yaml.unsafe_load(ymlfile)
-
-    default_cache_path = f"sklearn_cache/{os.path.basename(cfg_path)}/classifier"
-    classifier_cache = cfg.get(CFG_CLASSIFIER_CACHE, default_cache_path)
-
-    ds_dict: DatasetDict = load_from_disk(dataset_path)
-    ds: Dataset = ds_dict["train"]
-
-    text_transformers_cfg = cfg.get(CFG_TEXT_TRANSFORMERS, [])
-    text_transformer = Pipeline(
-        steps=[
-            (
-                tr[CFG_NAME],
-                tr[CFG_CLASS](*tr.get(CFG_ARGS, []), **tr.get(CFG_KWARGS, {})),
-            )
-            for tr in text_transformers_cfg
-        ],
-        # memory="sklearn_cache/text_transformer",
-    )
-
-    print("Text transformer:", text_transformer)
-
-    audio_transformers_cfg = cfg.get(CFG_AUDIO_TRANSFORMERS, [])
-    audio_transformer = Pipeline(
-        steps=[
-            (
-                tr[CFG_NAME],
-                tr[CFG_CLASS](*tr.get(CFG_ARGS, []), **tr.get(CFG_KWARGS, {})),
-            )
-            for tr in audio_transformers_cfg
-        ],
-    )
-
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("text", text_transformer, TEXT_COL),
-            ("audio", audio_transformer, AUDIO_COL),
-        ],
-        n_jobs=-1,
-    )
-
-    print("Preprocessor:", preprocessor)
-
-    resamplers = [
-        (
-            resampler_cfg[CFG_NAME],
-            resampler_cfg[CFG_CLASS](
-                *resampler_cfg.get(CFG_ARGS, []),
-                **resampler_cfg.get(CFG_KWARGS, {}),
-            ),
+        clf = fit_save_or_load(
+            do_fit,
+            clf_or_saved_path,
+            X_train,
+            y_train,
+            save_dir=save_dir,
+            save_file_name=f"fold{n}.model",
         )
-        for resampler_cfg in cfg.get(CFG_RESAMPLERS, [])
-    ]
 
-    print("Resamplers:", resamplers)
+        # if do_fit:
+        #     clf = fit_save(
+        #         clf_or_saved_path,
+        #         X_train,
+        #         y_train,
+        #         save_dir=save_dir,
+        #         save_file_name=f"fold{n}.model",
+        #     )
+        # else:
+        #     in_path = os.path.join(clf_or_saved_path, f"fold{n}.model")
+        #     clf = load_pipeline(in_path)
 
-    classifier_cfg = cfg.get(CFG_CLASSIFIER, {})
-    classifier = (
-        "classifier",
-        classifier_cfg[CFG_CLASS](
-            *classifier_cfg.get(CFG_ARGS, []),
-            **classifier_cfg.get(CFG_KWARGS, {}),
-        ),
+        # yield clf
+
+        dev_files_pooled.extend(fold_eval_df["file"])
+        y_true_pooled.extend(y_true)
+        y_pred_pooled.extend(clf.predict(X_eval))
+        y_scores_pooled.extend(clf.predict_proba(X_eval))
+        log.info(f"Finished fold {n}")
+
+    log.info(
+        f"Crossvalidation: \n{classification_report(y_true_pooled, y_pred_pooled)}"
     )
 
-    print("Classifier:", classifier)
+    res_dict = {
+        "dev_files": dev_files_pooled,
+        "dev_y_true": y_true_pooled,
+        "dev_y_pred": y_pred_pooled,
+        "dev_y_scores": y_scores_pooled,
+    }
+    if test_df is not None:
+        X_train, y_train = train_df, train_df[y_col]
+        X_test, y_true = test_df, test_df[y_col].to_numpy()
+        clf = fit_save_or_load(
+            do_fit,
+            clf_or_saved_path,
+            X_train,
+            y_train,
+            save_dir=save_dir,
+            save_file_name="full.model",
+        )
 
-    clf = Pipeline(
-        steps=[
-            ("preprocessor", preprocessor),
-            *resamplers,
-            classifier,
-        ],
-        # memory=classifier_cache,
-        # ("classifier", LogisticRegression())]
+        y_pred = clf.predict(X_test)
+        y_scores = clf.predict_proba(X_test)
+
+        res_dict["test_files"] = X_test["file"].to_list()
+        res_dict["test_y_true"] = y_true
+        res_dict["test_y_pred"] = y_pred
+        res_dict["test_y_scores"] = y_scores
+
+        log.info(f"Full model: \n{classification_report(y_true, y_pred)}")
+        # if do_fit:
+        #     clf = fit_save(
+        #         clf_or_saved_path,
+        #         X_train,
+        #         y_train,
+        #         save_dir=save_dir,
+        #         save_file_name=,
+        #     )
+        #     # clf = fit(clf_or_saved_path, X_train, y_train)
+        #     # if save_dir is not None:
+        #     #     model_fpath = os.path.join(save_dir, f"full.model")
+        #     #     with open(model_fpath, "wb") as f:
+        #     #         pickle.dump(clf, file=f)
+        #     #         log.info(f"Pickled full pipeline to {model_fpath}")
+        # else:
+        #     in_path = os.path.join(clf_or_saved_path, "full.model")
+        #     clf = load_pipeline(in_path)
+        #     # in_path = os.path.join(clf_or_saved_path, f"full.model")
+        #     # # log.info(f"Loading model from: {in_path}")
+        #     # with open(in_path, "rb") as f:
+        #     #     clf = pickle.load(f)
+
+    return res_dict
+
+
+def train(
+    pipeline_cfg: Union[DictConfig, str],
+    train_df: pd.DataFrame,
+    test_df: Optional[pd.DataFrame] = None,
+    # train_ds: Dataset,
+    # test_ds: Optional[Dataset] = None,
+    n_splits: int = 4,
+    save_dir: Optional[str] = None,
+    results_file: Optional[str] = None,
+    # model_save_path = pipeline_cfg.get(CFG_MODEL_SAVE_PATH)
+) -> None:
+    # if isinstance(pipeline_cfg is not None:
+    if isinstance(pipeline_cfg, DictConfig):
+        clf = assemble_pipeline(pipeline_cfg)
+        feat_cols = []
+        if "text" in pipeline_cfg:
+            feat_cols.append(pipeline_cfg.text.column_name)
+        if "audio" in pipeline_cfg:
+            feat_cols.append(pipeline_cfg.audio.column_name)
+        try:
+            check_is_fitted(clf)
+            do_fit = False
+        except NotFittedError:
+            do_fit = True
+
+    elif isinstance(pipeline_cfg, str):
+        clf = pipeline_cfg
+        do_fit = False
+
+    log.debug(
+        f"Doing crossfold with do_fit: {do_fit},"
+        f"predictor columns: {feat_cols},"
+        f"and label column: {Y_COL}."
     )
 
-    print("Pipeline:", clf)
-
-    for n, fitted_clf in enumerate(crossfold(clf_or_saved_path=clf, ds=ds)):
-        if save_model_to is not None:
-            out_path = os.path.join(save_model_to, f"{n}.pkl")
-            with open(out_path, "wb") as f:
-                pickle.dump(fitted_clf, f)
-                print("Saved model to:", out_path)
-
-
-def infer(dataset_path: str, saved_models_dir: str):
-    ds_dict: DatasetDict = load_from_disk(dataset_path)
-    ds: Dataset = ds_dict["train"]
-    for _ in crossfold(clf_or_saved_path=saved_models_dir, ds=ds):
-        pass
-    # crossfold(clf_or_path=saved_models_dir, ds=ds, do_fit=True)
-
-
-def main():
-    parser = ArgumentParser(**PARSER_CONFIG)
-    subparsers = parser.add_subparsers(**SUBPARSERS_CONFIG)
-
-    parser.add_argument(
-        "-d",
-        "--dataset",
-        required=True,
-        # default="../../data/train_dataset_dict",
-        dest="dataset_path",
-        metavar="PATH/TO/DATASET/",
-        help="Path to the dataset.",
+    results = crossfold(
+        do_fit=do_fit,
+        clf_or_saved_path=clf,
+        train_df=train_df,
+        test_df=test_df,
+        n_splits=n_splits,
+        # feat_cols=[pipeline_cfg.text.column_name, pipeline_cfg.audio_col.column_name],
+        save_dir=save_dir,
     )
+    if results_file is not None:
+        results_dir = os.path.dirname(results_file)
+        if results_dir:
+            os.makedirs(results_dir, exist_ok=True)
+        # out_path = os.path.join(results_file, "results.pkl")
+        with open(results_file, "wb") as f:
+            pickle.dump(results, file=f)
+            log.info(f"Pickled results to {results_file}")
 
-    inf_subparser = subparsers.add_parser(
-        "infer", aliases=["i", "inf"], description="Do inference"
-    )
-    inf_subparser.add_argument(
-        "-m",
-        "--saved_model_path",
-        required=True,
-        dest="saved_models_dir",
-        metavar="PATH/TO/SAVED/CLASSIFIERS",
-        help="Path where the saved per-fold classifiers are.",
-    )
-    # inf_subparser.add_argument(
-    #     "-l",
-    #     "--lang",
-    #     required=True,
-    #     choices=["tam", "mal"],
-    #     help="Language (tam for Tamil, mal for Malayalam)",
-    # )
-    inf_subparser.set_defaults(func=infer)
+    # for n, fitted_clf in enumerate(
+    #     crossfold(clf_or_saved_path=clf, ds=ds, n_splits=n_splits)
+    # ):
+    #     log.info(f"Finished fold {n}")
+    #     if model_save_path is not None:
+    #         out_path = os.path.join(model_save_path, f"{n}.pkl")
+    #         with open(out_path, "wb") as f:
+    #             pickle.dump(fitted_clf, f)
+    #             log.info(f"Saved model to: {out_path}")
 
-    train_subparser = subparsers.add_parser(
-        "train",
-        aliases=["t", "tr", "train", "f", "finetune"],
-        description="Finetune a pretrained model from HuggingFace",
-    )
-    train_subparser.add_argument(
-        "-c",
-        "--config",
-        required=True,
-        dest="cfg_path",
-        metavar="PATH/TO/CONFIG.YML",
-        help="Path to the config YAML file for this train run.",
-    )
-    train_subparser.add_argument(
-        "-m",
-        "--save_model_to",
-        default=None,
-        dest="save_model_to",
-        metavar="PATH/TO/SAVE/CLASSIFIERS",
-        help="Path where to save the per-fold classifiers.",
-    )
-    train_subparser.set_defaults(func=train)
 
-    args = parser.parse_args()
-    func_kwargs = dict(vars(args))
-    del func_kwargs["func"]
+# def infer(ds: Dataset, saved_models_dir: str):
+#     for _ in crossfold(clf_or_saved_path=saved_models_dir, ds=ds):
+#         pass
+#     # crossfold(clf_or_path=saved_models_dir, ds=ds, do_fit=True)
 
-    args.func(**func_kwargs)
+
+# @hydra.main(version_base=None, config_path="../config/hydra_root", config_name="config")
+@hydra.main(version_base=None, config_path="../config/hydra_root")
+@exception_handler(lambda e: log.critical(e, exc_info=True))
+def main(cfg: DictConfig) -> None:
+    log.debug(f"override_dirname: {HydraConfig.get().job.override_dirname}")
+    log.debug(f"cleaned_override_dirname: {cfg.cleaned_override_dirname}")
+    log.debug(
+        "hydra.sweep.dir/subdir: "
+        f"{HydraConfig.get().sweep.dir}/{HydraConfig.get().sweep.subdir}"
+    )
+    # if cfg.debug:
+    #     log.setLevel(logging.DEBUG)
+    # else:
+    #     log.setLevel(logging.WARN)
+    log.debug(OmegaConf.to_yaml(cfg, resolve=False))
+    # log.debug(OmegaConf.to_yaml(cfg, resolve=True))
+    log.debug(
+        f"STARTING process ID {os.getpid()}."
+        # "\n\tClassifier: {cfg.pipeline.classifier._target_}."
+        # "\n\tUsing:"
+        # "\n\t\t{cfg.pipeline.resamplers.keys()}."
+        # "\n\t\t{cfg.pipeline.postresample_transformers.keys()}."
+        "\n\tSeed: {cfg.global_rng.seed}."
+        "\n\tEnvironment: {submitit.JobEnvironment()}"
+    )
+    cfg = setup_rng(cfg)
+    # log.debug(cfg.global_rng is cfg.pipeline.classifier.random_state)
+    # assert cfg.global_rng is cfg.pipeline.classifier.random_state
+
+    # Path to saved datasets
+    ds_path: str = hydra.utils.to_absolute_path(cfg.dataset)
+
+    ds_dict: DatasetDict = load_from_disk(ds_path)
+    train_ds: Dataset = ds_dict["train"]
+    test_ds: Dataset = ds_dict["test"]
+
+    train_df: pd.DataFrame = train_ds.to_pandas()
+    test_df: pd.DataFrame = test_ds.to_pandas()
+
+    # train(cfg, ds, model_save_path=cfg.model_save_path)
+
+    pipeline_cfg = hydra.utils.instantiate(cfg.pipeline)  # , _recursive_=False)
+    log.debug(f"type(pipeline_cfg): {type(pipeline_cfg)}")
+
+    # if "_target_" in pipeline_cfg: # do inference only
+    # if not isinstance(pipeline_cfg, BaseEstimator):
+    if isinstance(pipeline_cfg, DictConfig):
+        # do training
+        log.info("Training.")
+        train(
+            pipeline_cfg=pipeline_cfg,
+            train_df=train_df,
+            test_df=test_df,
+            n_splits=cfg.n_splits,
+            save_dir=cfg.get(CFG_MODEL_DIR),
+            results_file=cfg.get(CFG_RESULTS_FILE),
+        )
+    # elif check_is_fitted(pipeline_cfg):  # do inference only
+    # Path where the saved per-fold classifiers are.
+    elif isinstance(pipeline_cfg, str):  # do inference only
+        log.info("Inference.")
+        train(
+            # do_fit=do_fit,
+            pipeline_cfg=pipeline_cfg,
+            train_df=train_df,
+            test_df=test_df,
+            n_splits=cfg.n_splits,
+            save_dir=None,
+            results_file=hydra.utils.to_absolute_path(cfg.get(CFG_RESULTS_FILE)),
+            # save_dir=save_dir,
+            # save_dir=cfg.get(CFG_MODEL_DIR),
+        )
+        # results = crossfold(
+        #     do_fit=do_fit,
+        #     clf_or_saved_path=cfg.get(CFG_MODEL_DIR),
+        #     train_df=train_df,
+        #     test_df=test_df,
+        #     n_splits=cfg.n_splits,
+        #     # save_dir=save_dir,
+        #     # save_dir=cfg.get(CFG_MODEL_DIR),
+        # )
+        # model_save_path: str = hydra.utils.to_absolute_path(
+        #     pipeline_cfg.model_save_path
+        # )
+    else:  # TODO?
+        log.critical(
+            f"Pipeline must be DictConfig or str, but instead found: {type(pipeline_cfg)}"
+            # "Presently, directly instantiated pipelines must already be fitted"
+        )
+        sys.exit()
 
 
 if __name__ == "__main__":

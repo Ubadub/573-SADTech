@@ -12,7 +12,7 @@ AXIS_FONT_SIZE = 16
 
 
 def create_instance_count_plot(
-        ds_dict: datasets.arrow_dataset.Dataset,
+        ds_dict: datasets.Dataset,
         lang: str,
         stage: str,
         output_path: Optional[str] = "analytics"
@@ -49,7 +49,7 @@ def create_instance_count_plot(
 
 if __name__ == '__main__':
     lang = sys.argv[1]
-    ds_dict_path = f"../data/{lang}/train_dataset_dict"
+    ds_dict_path = f"../data/{lang}/full_dataset_dict"
     ds_dict: datasets.DatasetDict = datasets.load_from_disk(ds_dict_path)
 
     ds_dict_train = ds_dict["train"]

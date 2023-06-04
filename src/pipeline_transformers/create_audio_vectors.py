@@ -24,8 +24,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 from transformers import (
+    AutoFeatureExtractor,
     AutoModel,
-    AutoProcessor,
+    # AutoProcessor,
     MCTCTProcessor,
     PreTrainedModel,
     ProcessorMixin,
@@ -75,17 +76,19 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         log.debug("Fitting.")
         self.model_: PreTrainedModel = AutoModel.from_pretrained(self.model_path)
-        if "mctct" in self.model_.config.model_type:  # workaround
-            log.debug("MCTCT model; using MCTCTProcessor instead of AutoProcessor.")
-            self.processor_: ProcessorMixin = MCTCTProcessor.from_pretrained(
-                self.model_path
-            )
-        else:
-            self.processor_: ProcessorMixin = AutoProcessor.from_pretrained(
-                self.model_path
-            )
+        self.feature_extractor_ = AutoFeatureExtractor.from_pretrained(self.model_path)
+        # if "mctct" in self.model_.config.model_type:  # workaround
+        #     log.debug("MCTCT model; using MCTCTProcessor instead of AutoProcessor.")
+        #     self.processor_: ProcessorMixin = MCTCTProcessor.from_pretrained(
+        #         self.model_path
+        #     )
+        # else:
+        #     self.processor_: ProcessorMixin = AutoProcessor.from_pretrained(
+        #         self.model_path
+        #     )
         self._converter = datasets.Audio(
-            sampling_rate=self.processor_.feature_extractor.sampling_rate
+            sampling_rate=self.feature_extractor_.sampling_rate
+            # sampling_rate=self.processor_.feature_extractor.sampling_rate
         )
         if getattr(self.model_.config, "is_encoder_decoder", False):
             log.debug("Model is encoder-decoder; saving encoder only.")
@@ -130,7 +133,8 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
 
         log.debug(f"Total samples: {num_samples}")
 
-        inputs = self.processor_(
+        inputs = self.feature_extractor_(
+            # inputs = self.processor_(
             # audio_array[0],  # get the first one for testing purposes
             # batch,
             audio_array,
@@ -152,7 +156,8 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
             log.info(f"Processing batch {batch_idx}.")
             if "cuda" in self.device:  # memory management
                 torch.cuda.empty_cache()
-            log.info(f"Processing batch {batch_idx} of size {len(batch)}")
+            # log.info(f"Processing batch {batch_idx} of size {eff_batch_size}")
+            log.info(f"Processing batch {batch_idx} of size {batch[0].shape[0]}")
             input_batch = dict(zip(inputs_keys, [_.to(self.device) for _ in batch]))
 
             if "cuda" in self.device:
@@ -191,24 +196,6 @@ class AudioFeatureExtractor(BaseEstimator, TransformerMixin):
         log.info("Completed feature extraction.")
 
         return concatenated_feats
-
-
-def add_feat_col(col_name: str, feat_vectors: NDArray):
-    """
-    Args:
-        col_name: Column name for the features to add to the Dataset
-        feat_vectors: NDArray of shape [dataset_length, embedding_dim]
-    Returns:
-        A function that accepts a row and its index and adds to the provided row the
-        corresponding feaure row in feas
-    """
-
-    def _(r, idx):
-        to_add = feat_vectors[idx]
-        r[col_name] = to_add
-        return r
-
-    return _
 
 
 def main():
@@ -294,17 +281,9 @@ def main():
             log.debug(f"Vectors:\n{audio_vectors}")
             log.info(f"Created vector embedding with shape: {audio_vectors.shape}")
 
-            new_feats = ds.features.copy()
-            new_feats[col_name] = datasets.Sequence(
-                datasets.Value(str(audio_vectors.dtype))
-            )
-            log.debug(f"New features:\n{new_feats}")
-            ds = ds.map(
-                add_feat_col(col_name=col_name, feat_vectors=audio_vectors),
-                features=new_feats,
-                with_indices=True,
-            )
+            ds = ds.add_column(name=col_name, column=list(audio_vectors))
             log.debug(f"Updated ds for split {split}:\n{ds}")
+            log.debug(f"New features:\n{ds.features}")
 
             new_ds_dict_builder[split] = ds
             new_ds_dict: datasets.DatasetDict = datasets.DatasetDict(

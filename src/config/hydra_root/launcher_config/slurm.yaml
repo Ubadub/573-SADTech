@@ -1,0 +1,70 @@
+# @package _global_
+defaults:
+  - override /hydra/launcher: submitit_slurm
+  - _self_
+hydra:
+  callbacks:
+    jobend_callback:
+      _target_: pipeline_transformers.callbacks.MyLogJobReturnCallback
+      # _target_: hydra.experimental.callbacks.LogJobReturnCallback
+  launcher:
+    account: stf
+    cpus_per_task: 4
+    # gpus_per_node: 1
+    # gres: "gpu:rtx6k:1"
+    gres: "gpu:a40:1"
+    mem_gb: 48 # 36
+    # partition: "gpu-2080ti"
+    partition: ckpt
+    timeout_min: 2880
+    # additional_parameters:
+    #   mail-user: "abhinavp@uw.edu"
+    #   mail-type: "BEGIN,END,FAIL,ARRAY_TASKS"
+    #   # mail-type: "ALL,ARRAY_TASKS"
+  job:
+    config:
+      override_dirname:
+        exclude_keys:
+          - base_dir
+          - cleaned_override_dirname
+          - results_file
+          - model_dir
+          - hydra.launcher
+          - hydra.sweep.dir
+          - hydra.sweep.subdir
+          - dataset
+          - debug
+          - experiment
+          - launcher_config
+          - lang
+          - pipeline.text
+          - pipeline.audio
+          - pipeline.audio.column_name
+          - pipeline.text.column_name
+          - pipeline.text.vectorizer
+          - pipeline/text/vectorizer
+          - pipeline.text.vectorizer.device
+          - pipeline.text.vectorizer.language_model
+          - seed
+          - hydra.verbose
+          # - pipeline.text.vectorizer.layers_to_combine
+          # - pipeline.classifier
+        item_sep: "%"
+        kv_sep: "="
+  sweep:
+    # dir: multirun
+    dir: ${base_dir}/multirun/${now:%m-%d-%H-%M}
+    # dir: multirun/${hydra:job.override_dirname}
+    subdir: ${cleaned_override_dirname}/${seed}
+    # subdir: ${pipeline.classifier.__target__}/${hydra:job.override_dirname}/${seed}
+  # verbose: ${debug}
+  verbose: True
+  # verbose: ["__main__", "
+  #   subdir:
+  # sweeper:
+  #   params:
+  #     classifiers@pipeline.classifier: rf, logistic
+  #     +resamplers@pipeline.resamplers: smote, random_oversampler
+  #     +transformers@pipeline.postresample_transformers: scaler, no_transformer
+  #     # +transformers@pipeline.postresample_transformers: scaler, pca
+  #     seed: 0, 42, 100, 573, 2023

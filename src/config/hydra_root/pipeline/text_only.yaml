@@ -1,0 +1,6 @@
+defaults:
+  - text/vectorizer: TransformerLayerVectorizer
+  - _self_
+text:
+  vectorizer: ???
+classifier: ???

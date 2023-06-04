@@ -1,0 +1,3 @@
+pca:
+  _target_: sklearn.decomposition.PCA
+  random_state: ${ref:global_rng}

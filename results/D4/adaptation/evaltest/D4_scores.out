@@ -1,0 +1,14 @@
+
+###### Adaptation (combined), Logistic Regression, Ridge Regression Feature Selection, Text + Audio  ######
+                 precision    recall  f1-score   support
+
+HIGHLY NEGATIVE       0.00      0.00      0.00         2
+       NEGATIVE       0.00      0.00      0.00         3
+        NEUTRAL       0.00      0.00      0.00         4
+       POSITIVE       0.42      1.00      0.59         8
+HIGHLY POSITIVE       0.00      0.00      0.00         3
+
+       accuracy                           0.40        20
+      macro avg       0.08      0.20      0.12        20
+   weighted avg       0.17      0.40      0.24        20
+

@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - crossval
+  - _self_
+cleaned_override_dirname: ${lang}/text_only/${slash2under:${pipeline.text.vectorizer.language_model}}/${clean_path:${hydra:job.override_dirname}}

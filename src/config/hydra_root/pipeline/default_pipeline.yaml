@@ -1,0 +1,14 @@
+defaults:
+  - text/vectorizer: TransformerLayerVectorizer
+  # - audio/vectorizer: ColumnSelector
+  # - /classifiers@classifier: rf
+  - _self_
+text:
+  column_name: "text"
+  vectorizer: ???
+audio:
+  column_name: ???
+# audio:
+#   vectorizer: ???
+joint: []
+classifier: ???
