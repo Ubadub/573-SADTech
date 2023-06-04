@@ -1,0 +1,1 @@
+text_only/xlm-roberta-base/layers_to_combine=last2/resamplers=random_oversampler/postresample_transformers=\[select_from_model\]/estimator=ridge/alpha=1.0/classifier=logistic/C=5.0/seed=573

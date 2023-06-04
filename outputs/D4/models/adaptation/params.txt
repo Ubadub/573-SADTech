@@ -1,0 +1,1 @@
+xlm-roberta-base/facebook_wav2vec2-large-xlsr-53_\[-3\]/layers_to_combine=last2/resamplers=random_oversampler/postresample_transformers=\[select_from_model\]/estimator=ridge/alpha=30.0/classifier=logistic/C=5.0/seed=573

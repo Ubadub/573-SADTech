@@ -1,7 +1,7 @@
 #!/bin/sh
 
 
-ENV_PATH="/projects/assigned/2223_ling573_group6/573-SADTech/env/573-SADTech"
+ENV_PATH="/projects/assigned/2223_ling573_group6/env/SADTech"
 DEBUG="${1:-False}"
 
 if [[ "$DEBUG" == "True" ]]
