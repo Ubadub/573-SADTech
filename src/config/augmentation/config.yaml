@@ -1,0 +1,16 @@
+defaults:
+  # - augmentor: MIPGSS
+  - _self_
+augment_target_split: "augmented"
+lang: ???
+dataset_basename: full_dataset_dict_orig
+dataset: ../data/${lang}/${dataset_basename}
+# identifier_col: file
+model:
+  # path: ../models/${lang}_300.bin
+  path: ../models/${lang}.vec
+save_path: aug_ds_test
+splits_to_augment:
+  - train
+hydra:
+  verbose: __main__

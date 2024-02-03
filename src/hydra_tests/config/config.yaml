@@ -1,0 +1,13 @@
+defaults:
+  - app/db: psql
+  # - override hydra/launcher: submitit_slurm
+  - _self_
+debug: False
+app:
+  app_name: my_app
+# hydra:
+#   launcher:
+#     account: stf
+#     gres: "gpu:a40:1"
+#     partition: ckpt
+#     timeout_min: 180

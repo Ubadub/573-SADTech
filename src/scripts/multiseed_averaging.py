@@ -54,29 +54,42 @@ def multiseed_average(root_dir: str) -> dict:
                     files = [os.path.join(parent_path, c, "results.pkl") for c in child_dirs]
                     scores = defaultdict(list)
                     for f in files:
-                        with open(f, "rb") as _:
-                            res_dict = pickle.load(file=_)
+                        try:
+                            with open(f, "rb") as _:
+                                res_dict = pickle.load(file=_)
+                        except FileNotFoundError:
+                            continue
+                        except EOFError:
+                            continue
+
+                        y_true = res_dict.get("dev_y_true", res_dict.get("y_true"))
+                        y_pred = res_dict.get("dev_y_pred", res_dict.get("y_pred"))
+                        if not y_true or not y_pred:
+                            raise ValueError(f"No y_true found. Keys: {res_dict.keys()}")
                         dev_report = classification_report(
-                            res_dict["dev_y_true"],
-                            res_dict["dev_y_pred"],
+                            y_true,
+                            y_pred,
+                            # res_dict["dev_y_pred"],
                             output_dict=True,
                             zero_division=0,
                         )
-                        test_report = classification_report(
-                            res_dict["test_y_true"],
-                            res_dict["test_y_pred"],
-                            output_dict=True,
-                            zero_division=0,
-                        )
+
                         scores["dev_macro_f1"].append(dev_report["macro avg"]["f1-score"])
                         scores["dev_macro_prec"].append(dev_report["macro avg"]["precision"])
                         scores["dev_macro_rec"].append(dev_report["macro avg"]["recall"])
                         scores["dev_accuracy"].append(dev_report["accuracy"])
 
-                        scores["test_macro_f1"].append(test_report["macro avg"]["f1-score"])
-                        scores["test_macro_prec"].append(test_report["macro avg"]["precision"])
-                        scores["test_macro_rec"].append(test_report["macro avg"]["recall"])
-                        scores["test_accuracy"].append(test_report["accuracy"])
+                        if "test_y_true" in res_dict:
+                            test_report = classification_report(
+                                res_dict["test_y_true"],
+                                res_dict["test_y_pred"],
+                                output_dict=True,
+                                zero_division=0,
+                            )
+                            scores["test_macro_f1"].append(test_report["macro avg"]["f1-score"])
+                            scores["test_macro_prec"].append(test_report["macro avg"]["precision"])
+                            scores["test_macro_rec"].append(test_report["macro avg"]["recall"])
+                            scores["test_accuracy"].append(test_report["accuracy"])
                     curr_d[components[-1]] = {
                         score_name: avg(score_list)
                         # score_name: sum(score_list) / len(score_list)

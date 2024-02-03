@@ -1,0 +1,15 @@
+defaults:
+  - _self_
+model_path: ../cc.ta.300.TamilOnly.vec
+model:
+  _target_: transformers.AutoModelForSeq2SeqLM
+  cls: ${..model_path}
+tokenizer:
+  _target_: transformers.AutoTokenizer
+  cls: ${..model_path}
+  bos_token: "<s>"
+  eos_token: "</s>"
+  pad_token: "<pad>"
+  use_fast: False
+generation_config:
+  _target_: 

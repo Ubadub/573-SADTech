@@ -1,0 +1,8 @@
+defaults:
+  - augmentor: MIPGSS
+  - _self_
+lang: ???
+dataset_basename: full_dataset_dict
+dataset_path: ../data/${lang}/${dataset_basename}
+splits_to_augment:
+  - train

@@ -1,0 +1,43 @@
+# @package _global_
+defaults:
+  - override /hydra/launcher: submitit_slurm
+  - _self_
+cleaned_override_dirname: ${lang}/${clean_path:${hydra:job.override_dirname}}
+results_file: outputs/${cleaned_override_dirname}/${seed}.pkl
+lang: ???
+dataset: ../data/${lang}/train_dataset_dict
+hydra:
+  launcher:
+    account: stf
+    gres: "gpu:a40:1"
+    mem_gb: 24
+    partition: ckpt
+    timeout_min: 1440
+  job:
+    config:
+      override_dirname:
+        exclude_keys:
+          - dataset
+          - debug
+          - experiment
+          - lang
+          - seed
+          # - pipeline.classifier
+        item_sep: "/"
+        kv_sep: "="
+  sweep:
+    dir: multirun
+    # dir: multirun/${now:%m-%d-%H-%M}
+    # dir: multirun/${hydra:job.override_dirname}
+    subdir: ${cleaned_override_dirname}/${seed}
+    # subdir: ${pipeline.classifier.__target__}/${hydra:job.override_dirname}/${seed}
+  #   subdir: 
+  # sweeper:
+  #   params:
+  #     classifiers@pipeline.classifier: rf, logistic
+  #     +resamplers@pipeline.resamplers: smote, random_oversampler
+  #     +transformers@pipeline.postresample_transformers: scaler, no_transformer
+  #     # +transformers@pipeline.postresample_transformers: scaler, pca
+  #     seed: 0, 42, 100, 573, 2023
+  # verbose: ${debug}
+  verbose: __main__

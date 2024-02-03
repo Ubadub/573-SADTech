@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - override /pipeline/text/vectorizer: xlm-roberta-large
+  - override /pipeline/text/vectorizer/layers_to_combine: last8
+  - _self_

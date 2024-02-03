@@ -1,0 +1,7 @@
+pipeline.text.vectorizer.layers_to_combine=last2, last4
++classifiers@pipeline.classifier=logistic
++pipeline.classifier.C=1.0
++resamplers@pipeline.resamplers=random_oversampler
++transformers@pipeline.postresample_transformers=[scaler, select_from_model]
++classifiers@pipeline.postresample_transformers.select_from_model.estimator=lasso
+pipeline.postresample_transformers.select_from_model.estimator.alpha=0.1

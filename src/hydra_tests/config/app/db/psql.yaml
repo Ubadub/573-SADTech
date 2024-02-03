@@ -1,0 +1,3 @@
+defaults:
+  - _self_
+db_name: my_psql_db

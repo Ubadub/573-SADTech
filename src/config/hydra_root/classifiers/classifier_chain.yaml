@@ -1,0 +1,9 @@
+defaults:
+  # - /classifiers@base_estimator: logistic
+  - _self_
+_target_: sklearn.multioutput.ClassifierChain
+base_estimator: ???
+order:
+  - 3
+  - 2
+  - 

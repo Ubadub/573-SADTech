@@ -1,0 +1,4 @@
+# @package _global_
+defaults:
+  - ~/pipeline.audio
+  - _self_
